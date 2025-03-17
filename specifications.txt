@@ -1,0 +1,37 @@
+# General Requirements
+1. The project is a database system for managing information about natural parks.
+2. The system should store information about provinces, parks, natural elements (vegetal, animal, mineral), park personnel, visitors, and accommodations.
+3. The system should use a database engine (MySQL/MariaDB, PostgreSQL, or SQL Server).
+4. The database should contain test data for demonstration.
+5. The project should include documentation (Carátula, Introducción, ER model, Relational model, Assumptions, Physical design, Code, Conclusions).
+
+# Data Requirements
+1. Store information about provinces, including the responsible organization for parks.
+2. Store information about parks, including name, declaration date, contact email, and area.
+3. Store information about park areas, including name and extension.
+4. Store information about natural elements (vegetal, animal, mineral) residing in each area, including scientific name, common name, and number of individuals.
+5. Store specific information for vegetal elements (flowering period).
+6. Store specific information for animal elements (diet, mating season).
+7. Store specific information for mineral elements (crystal or rock).
+8. Track which elements serve as food for other elements (excluding minerals feeding on anything and vegetal elements feeding on other elements).
+9. Store information about park personnel (DNI, CUIL, name, address, phone numbers, salary).
+10. Differentiate between different types of personnel: management, surveillance, research, and conservation.
+11. Store information about visitors (DNI, name, address, profession).
+12. Store information about accommodations (capacity, category).
+13. Store information about excursions (days of the week, time), and which accommodations organize them.
+
+# Functional Requirements
+1. Determine the province with the most natural parks.
+2. Identify vegetal species found in at least half of the parks.
+3. Count the number of visitors in parks with specific codes (A and B).
+4. Implement a trigger that sends an email to the park's contact email when the quantity of a species decreases.
+5. Implement database constraints based on the problem domain.
+
+# Additional Requirements from 2019 TP
+1. Verify if public information can be used in the model (e.g., a list of national parks).
+2. Estimate the size of the tables.
+3. Identify species found in all parks.
+4. Identify species found in only one park.
+5. Propose suitable indexes for the queries and analyze the execution plan.
+6. Create a procedure that compares tables, indexes, and constraints of two databases.
+7. Investigate concurrency control and recovery mechanisms in two commercial database engines.

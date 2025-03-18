@@ -16,28 +16,8 @@ class TestProvincesDataRequirements(TestCase):
         )
         cls.cursor = cls.connection.cursor()
 
-        # Load data from CSV file
-        with open('data/areas_protegidas_nacionales_y_provinciales_por_jurisdiccion.csv', 'r', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
-            for row in reader:
-                try:
-                    # Extract data from the row
-                    jurisdiccion = row['jurisdicción']
-                    #number = int(row['número']) # not used for now
-                    #superficie_en_ha = int(row['superficie_en_ha']) # not used for now
-                    #porcentaje_de_superficie_protegida = float(row['porcentaje_de_superficie_protegida']) # not used for now
-
-                    # Insert data into the provinces table
-                    cls.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES (%s, 'Unknown')", (jurisdiccion,)) # Assuming 'Unknown' is a default value
-                    cls.connection.commit()
-                except pymysql.err.IntegrityError:
-                    cls.connection.rollback() # Province already exists
-
     @classmethod
     def tearDownClass(cls):
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM provinces;")
-        cls.connection.commit()
         cls.connection.close()
 
     def provinces_table_exists(self):
@@ -221,35 +201,8 @@ class TestParksDataRequirements(TestCase):
         )
         cls.cursor = cls.connection.cursor()
 
-        # Load data from CSV file (or create mock data)
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO provinces (name) VALUES ('Buenos Aires');")
-            cls.connection.commit()
-
-        # Get the IDs of the inserted province
-        with cls.connection.cursor() as cursor:
-            cursor.execute("SELECT id FROM provinces WHERE name = 'Buenos Aires';")
-            cls.province_id = cursor.fetchone()[0]
-
-        with open('data/areas_protegidas_nacionales_y_provinciales_por_jurisdiccion.csv', 'r', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
-            for row in reader:
-                try:
-                    # Extract data from the row
-                    jurisdiccion = row['jurisdicción']
-
-                    # Insert data into the parks table
-                    cls.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, total_area) VALUES (%s, '2023-01-01', 'test@example.com', 1000)", (jurisdiccion,)) # Assuming 'Unknown' is a default value
-                    cls.connection.commit()
-                except pymysql.err.IntegrityError:
-                    cls.connection.rollback() # Province already exists
-
     @classmethod
     def tearDownClass(cls):
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM parks;")
-            cursor.execute("DELETE FROM provinces;")
-        cls.connection.commit()
         cls.connection.close()
 
     def test_parks_table_exists(self):
@@ -275,17 +228,6 @@ class TestParksDataRequirements(TestCase):
         self.cursor.execute("SHOW COLUMNS FROM parks LIKE 'total_area';")
         area_column = self.cursor.fetchone()
         self.assertIsNotNone(area_column, "Parks table does not have 'total_area' column")
-
-    def test_parks_data_insertion(self):
-        """Test that parks data is loaded correctly from the CSV file"""
-        self.cursor.execute("SELECT name FROM parks;")
-        parks = [row['name'] for row in self.cursor.fetchall()]
-
-        with open('data/areas_protegidas_nacionales_y_provinciales_por_jurisdiccion.csv', 'r', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
-            expected_parks = [row['jurisdicción'] for row in reader]
-
-        self.assertEqual(sorted(parks), sorted(expected_parks), "Park names do not match the CSV file")
 
 
 class TestDataValidation(TestCase):

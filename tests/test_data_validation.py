@@ -52,6 +52,25 @@ class TestProvincesDataRequirements(TestCase):
             self.connection.rollback()
             self.assertIn("cannot be null", str(e).lower(), "Error message does not indicate NULL constraint violation")
 
+    def test_provinces_has_unique_responsible_organization(self):
+        """Test that each province has one and only one responsible organization"""
+        try:
+            # Insert a province without a responsible organization
+            self.cursor.execute("INSERT INTO provinces (name) VALUES ('La Pampa')")
+            self.connection.commit()
+            self.fail("Should not allow a province without a responsible organization")
+        except pymysql.err.IntegrityError:
+            self.connection.rollback()
+
+        try:
+            # Insert a province with an empty responsible organization
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('San Luis', '')")
+            self.connection.commit()
+            self.fail("Should not allow a province with an empty responsible organization")
+        except pymysql.err.IntegrityError:
+            self.connection.rollback()
+
+
 class TestDataValidation(TestCase):
     @classmethod
     def setUpClass(cls):

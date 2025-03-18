@@ -1,24 +1,39 @@
 # General Requirements
 1. The project is a database system for managing information about natural parks.
 2. The system should store information about provinces, parks, natural elements (vegetal, animal, mineral), park personnel, visitors, and accommodations.
-3. The system should use a database engine (MySQL/MariaDB, PostgreSQL, or SQL Server).
+3. The system should use a database engine MySQL.
 4. The database should contain test data for demonstration.
 5. The project should include documentation (Carátula, Introducción, ER model, Relational model, Assumptions, Physical design, Code, Conclusions).
 
 # Data Requirements
-1. Store information about provinces, including the responsible organization for parks.
-2. Store information about parks, including name, declaration date, contact email, and area.
-3. Store information about park areas, including name and extension.
+1. Store information about provinces, including the responsible organization for parks. Each province should have one and only one responsible organization for its parks.
+2.a. Store information about parks, including name, declaration date, contact email, code.
+2.b. Por motivos de eficiencia se desea favorecer las consultas referentes al número
+de parques existentes en cada Provincia and la superficie total declarada parque nat-
+ural en cada Provincia.
+2.c. Un parque puede estar compartido por más de una Provincia.
+3. Store information about park areas, including name and extension. a park is composed of several areas.
 4. Store information about natural elements (vegetal, animal, mineral) residing in each area, including scientific name, common name, and number of individuals.
-5. Store specific information for vegetal elements (flowering period).
-6. Store specific information for animal elements (diet, mating season).
+5. Store specific information for vegetal elements (if they flower and when is their flowering period).
+6. Store specific information for animal elements (diet (herbívora, carnívora u omnívora), mating period).
 7. Store specific information for mineral elements (crystal or rock).
-8. Track which elements serve as food for other elements (excluding minerals feeding on anything and vegetal elements feeding on other elements).
+8. Track which elements serve as food for other elements (excluding on anything feeding on minerals and vegetal elements feeding on other elements).
 9. Store information about park personnel (DNI, CUIL, name, address, phone numbers, salary).
 10. Differentiate between different types of personnel: management, surveillance, research, and conservation.
-11. Store information about visitors (DNI, name, address, profession).
+10.a. Personal de gestión: registra los datos de los visitantes del parque and están des-
+tinados en una entrada del parque (las entradas se identifican por un número).
+10.b. Personal de vigilancia: vigila un área determinada del parque que recorre en
+un vehículo (tipo and matrícula). Puede ocurrir que use el mismo vehículo para mas
+de un área, pero siempre es el mismo en cada área que vigila.
+10.c. Personal investigador: Tiene una titulación que ha de recogerse and pueden re-
+alizar (incluso conjuntamente) proyectos de investigación sobre un determinado
+elemento. Un proyecto de investigación tiene un presupuesto and un periodo de real-
+ización.
+10.d. Personal de conservación: mantiene and conserva un área determinada del par-
+que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos).
+11. Store information about visitors (DNI, name, address, profession, and which accomodation they stay in (only one)).
 12. Store information about accommodations (capacity, category).
-13. Store information about excursions (days of the week, time), and which accommodations organize them.
+13. Store information about excursions (days of the week, time, by foot or by vehicle), and which accommodations organize them (can be more than one). any visitor in a given park can come to any excursion in that park
 
 # Functional Requirements
 1. Determine the province with the most natural parks.
@@ -28,7 +43,7 @@
 5. Implement database constraints based on the problem domain.
 
 # Additional Requirements from 2019 TP
-1. Verify if public information can be used in the model (e.g., a list of national parks).
+1. Verify if public information can be used in the model (e.g., a list of national parks). DONE, information already in data dir
 2. Estimate the size of the tables.
 3. Identify species found in all parks.
 4. Identify species found in only one park.

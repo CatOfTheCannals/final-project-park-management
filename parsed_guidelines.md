@@ -68,7 +68,7 @@ gestionados por las provincias (General Requirements 1)
 Se sabe lo siguiente:
 Una Provincia puede tener varios parques naturales.
 En toda Provincia existe uno and sólo un organismo responsable de los parques. (Data Requirements 1)
-Un parque puede estar compartido por más de una Provincia.
+Un parque puede estar compartido por más de una Provincia. (Data Requirements X)
 Un parque natural se identifica por un nombre, (Data Requirements 2)
 fue declarado en una fecha, (Data Requirements 2)
 tiene un email de contacto, (Data Requirements 2)
@@ -77,7 +77,7 @@ and caracterizadas por una determinada extensión. (Data Requirements 3)
 
 Por motivos de eficiencia se desea favorecer las consultas referentes al número
 de parques existentes en cada Provincia and la superficie total declarada parque nat-
-ural en cada Provincia.
+ural en cada Provincia. (Data Requirements 14)
 
 En cada área forzosamente residen elementos naturales que pueden ser de tres
 tipos: vegetales, animales and minerales.

@@ -32,6 +32,7 @@ class TestDatabaseConnection(TestCase):
                 CREATE TABLE IF NOT EXISTS park_provinces (
                     park_id INT,
                     province_id INT,
+                    extension_in_province DECIMAL(15,2),
                     FOREIGN KEY (park_id) REFERENCES parks(id),
                     FOREIGN KEY (province_id) REFERENCES provinces(id),
                     PRIMARY KEY (park_id, province_id)

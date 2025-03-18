@@ -155,7 +155,7 @@ class TestParkProvincesDataRequirements(TestCase):
         """Test data insertion into park_provinces table"""
         try:
             # Insert valid data
-            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id) VALUES (%s, %s)", (self.park_id, self.province_id))
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, area_in_province) VALUES (%s, %s, 500.00)", (self.park_id, self.province_id))
             self.connection.commit()
 
             # Verify that the data was inserted
@@ -166,6 +166,32 @@ class TestParkProvincesDataRequirements(TestCase):
         except Exception as e:
             self.connection.rollback()
             self.fail(f"Error inserting data into park_provinces table: {e}")
+
+    def test_park_provinces_area_sum_equals_park_total_area(self):
+        """Test that the sum of area_in_province for a park equals the park's total_area"""
+        try:
+            # Insert data for two provinces sharing the same park
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, area_in_province) VALUES (%s, %s, 600.00)", (self.park_id, self.province_id))
+            self.cursor.execute("INSERT INTO provinces (name) VALUES ('Cordoba');")
+            self.connection.commit()
+            self.cursor.execute("SELECT id FROM provinces WHERE name = 'Cordoba';")
+            cordoba_id = self.cursor.fetchone()[0]
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, area_in_province) VALUES (%s, %s, 400.00)", (self.park_id, cordoba_id))
+            self.connection.commit()
+
+            # Calculate the sum of area_in_province for the park
+            self.cursor.execute("SELECT SUM(area_in_province) FROM park_provinces WHERE park_id = %s", (self.park_id,))
+            sum_area_in_province = self.cursor.fetchone()[0]
+
+            # Get the total_area of the park
+            self.cursor.execute("SELECT total_area FROM parks WHERE id = %s", (self.park_id,))
+            total_area = self.cursor.fetchone()[0]
+
+            # Assert that the sum of area_in_province equals the total_area
+            self.assertEqual(float(sum_area_in_province), float(total_area), "Sum of area_in_province does not equal park's total_area")
+        except Exception as e:
+            self.connection.rollback()
+            self.fail(f"Error in test_park_provinces_area_sum_equals_park_total_area: {e}")
 
     def test_park_provinces_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in park_provinces table"""

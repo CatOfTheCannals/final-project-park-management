@@ -28,6 +28,14 @@ class TestDatabaseConnection(TestCase):
                     contact_email VARCHAR(255),
                     total_area DECIMAL(15,2)
                 );
+
+                CREATE TABLE IF NOT EXISTS park_provinces (
+                    park_id INT,
+                    province_id INT,
+                    FOREIGN KEY (park_id) REFERENCES parks(id),
+                    FOREIGN KEY (province_id) REFERENCES provinces(id),
+                    PRIMARY KEY (park_id, province_id)
+                );
             ''')
         cls.connection.commit()
 
@@ -38,6 +46,7 @@ class TestDatabaseConnection(TestCase):
             cursor.execute('''
                 DROP TABLE IF EXISTS provinces;
                 DROP TABLE IF EXISTS parks;
+                DROP TABLE IF EXISTS park_provinces;
             ''')
         cls.connection.close()
 
@@ -56,4 +65,9 @@ class TestDatabaseConnection(TestCase):
             # Check parks table exists 
             cursor.execute("SHOW TABLES LIKE 'parks';") 
             result = cursor.fetchone()
-            self.assertEqual(result[0], 'parks')        
+            self.assertEqual(result[0], 'parks')
+
+            # Check park_provinces table exists
+            cursor.execute("SHOW TABLES LIKE 'park_provinces';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'park_provinces')

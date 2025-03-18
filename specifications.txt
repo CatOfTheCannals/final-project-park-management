@@ -12,7 +12,8 @@
 de parques existentes en cada Provincia and la superficie total declarada parque nat-
 ural en cada Provincia.
 2.c. Un parque puede estar compartido por más de una Provincia.
-3. Store information about park areas, including name and extension. a park is composed of several areas.
+3.a. Store information about park areas, including name and extension. 
+3.b. A park is composed of several areas.
 4. Store information about natural elements (vegetal, animal, mineral) residing in each area, including scientific name, common name, and number of individuals.
 5. Store specific information for vegetal elements (if they flower and when is their flowering period).
 6. Store specific information for animal elements (diet (herbívora, carnívora u omnívora), mating period).
@@ -25,9 +26,10 @@ tinados en una entrada del parque (las entradas se identifican por un número).
 10.b. Personal de vigilancia: vigila un área determinada del parque que recorre en
 un vehículo (tipo and matrícula). Puede ocurrir que use el mismo vehículo para mas
 de un área, pero siempre es el mismo en cada área que vigila.
-10.c. Personal investigador: Tiene una titulación que ha de recogerse and pueden re-
+10.c.1. Personal investigador: Tiene una titulación que ha de recogerse and pueden re-
 alizar (incluso conjuntamente) proyectos de investigación sobre un determinado
-elemento. Un proyecto de investigación tiene un presupuesto and un periodo de real-
+elemento. 
+10.c.2. Un proyecto de investigación tiene un presupuesto and un periodo de real-
 ización.
 10.d. Personal de conservación: mantiene and conserva un área determinada del par-
 que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos).

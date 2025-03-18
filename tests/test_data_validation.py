@@ -13,9 +13,16 @@ class TestDataValidation(TestCase):
             db='park_management'
         )
         cls.cursor = cls.connection.cursor()
+
+        # Insert some test data
+        with cls.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO provinces (name) VALUES ('Buenos Aires');")
+            cls.connection.commit()
         
     @classmethod
     def tearDownClass(cls):
+        with cls.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM provinces WHERE name = 'Buenos Aires';")
         cls.connection.close()
 
     def test_01_provinces_table_exists(self):

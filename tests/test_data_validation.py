@@ -80,16 +80,16 @@ class TestParkProvincesDataRequirements(TestCase):
 
         # Insert some test data
         with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO provinces (name) VALUES ('Buenos Aires');")
+            cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Buenos Aires', 'OPDS');")
             cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, total_area) VALUES ('Parque A', '2020-01-01', 'parqueA@example.com', 1000);")
             cls.connection.commit()
 
         # Get the IDs of the inserted province and park
         with cls.connection.cursor() as cursor:
             cursor.execute("SELECT id FROM provinces WHERE name = 'Buenos Aires';")
-            cls.province_id = cursor.fetchone()[0]
+            cls.province_id = cursor.fetchone()['id']
             cursor.execute("SELECT id FROM parks WHERE name = 'Parque A';")
-            cls.park_id = cursor.fetchone()[0]
+            cls.park_id = cursor.fetchone()['id']
 
     @classmethod
     def tearDownClass(cls):
@@ -176,10 +176,10 @@ class TestParkProvincesDataRequirements(TestCase):
         try:
             # Insert data for two provinces sharing the same park
             self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 600.00)", (self.park_id, self.province_id))
-            self.cursor.execute("INSERT INTO provinces (name) VALUES ('Cordoba');")
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Cordoba', 'Secretaria de Ambiente');")
             self.connection.commit()
             self.cursor.execute("SELECT id FROM provinces WHERE name = 'Cordoba';")
-            cordoba_id = self.cursor.fetchone()[0]
+            cordoba_id = self.cursor.fetchone()['id']
             self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 400.00)", (self.park_id, cordoba_id))
             self.connection.commit()
 
@@ -201,7 +201,7 @@ class TestParkProvincesDataRequirements(TestCase):
         """Test foreign key constraint enforcement in park_provinces table"""
         try:
             # Try inserting invalid data (non-existent park_id)
-            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id) VALUES (999, %s)", (self.province_id,))
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (999, %s, 100)", (self.province_id,))
             self.connection.commit()
             self.fail("Should not allow insertion of data with non-existent park_id")
         except pymysql.err.IntegrityError as e:
@@ -210,7 +210,7 @@ class TestParkProvincesDataRequirements(TestCase):
 
         try:
             # Try inserting invalid data (non-existent province_id)
-            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id) VALUES (%s, 999)", (self.park_id,))
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, 999, 100)", (self.park_id,))
             self.connection.commit()
             self.fail("Should not allow insertion of data with non-existent province_id")
         except pymysql.err.IntegrityError as e:
@@ -260,7 +260,7 @@ class TestParksDataRequirements(TestCase):
         self.assertIsNotNone(area_column, "Parks table does not have 'total_area' column")
 
 
-class TestDataValidation(TestCase):
+class TestParkAreasDataRequirements(TestCase):
     @classmethod
     def setUpClass(cls):
         # Reuse the connection from previous tests
@@ -291,6 +291,23 @@ class TestDataValidation(TestCase):
         self.cursor.execute("SHOW COLUMNS FROM park_areas LIKE 'extension';")
         extension_column = self.cursor.fetchone()
         self.assertIsNotNone(extension_column, "Park areas table does not have 'extension' column")
+
+
+class TestDataValidation(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
 
     def natural_elements_table_exists(self):
         """Test that the natural_elements table exists"""

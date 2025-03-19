@@ -18,7 +18,8 @@ class TestDatabaseConnection(TestCase):
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS provinces (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(255) NOT NULL UNIQUE
+                    name VARCHAR(255) NOT NULL UNIQUE,
+                    responsible_organization VARCHAR(255)
                 );
                 
                 CREATE TABLE IF NOT EXISTS parks (
@@ -37,6 +38,15 @@ class TestDatabaseConnection(TestCase):
                     FOREIGN KEY (province_id) REFERENCES provinces(id),
                     PRIMARY KEY (park_id, province_id)
                 );
+
+                CREATE TABLE IF NOT EXISTS park_areas (
+                    park_id INT,
+                    area_number INT,
+                    name VARCHAR(255),
+                    extension DECIMAL(15,2),
+                    PRIMARY KEY (park_id, area_number),
+                    FOREIGN KEY (park_id) REFERENCES parks(id)
+                );
             ''')
         cls.connection.commit()
 
@@ -48,6 +58,7 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS provinces;
                 DROP TABLE IF EXISTS parks;
                 DROP TABLE IF EXISTS park_provinces;
+                DROP TABLE IF EXISTS park_areas;
             ''')
         cls.connection.close()
 
@@ -72,3 +83,8 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'park_provinces';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'park_provinces')
+
+            # Check park_areas table exists
+            cursor.execute("SHOW TABLES LIKE 'park_areas';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'park_areas')

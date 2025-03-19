@@ -82,6 +82,20 @@ class TestDatabaseConnection(TestCase):
                     crystal_or_rock VARCHAR(255),
                     FOREIGN KEY (element_id) REFERENCES natural_elements(id)
                 );
+
+                CREATE TABLE IF NOT EXISTS element_food (
+                    element_id INT,
+                    food_element_id INT,
+                    PRIMARY KEY (element_id, food_element_id),
+                    FOREIGN KEY (element_id) REFERENCES natural_elements(id),
+                    FOREIGN KEY (food_element_id) REFERENCES natural_elements(id),
+                    CONSTRAINT check_mineral_not_food CHECK (NOT EXISTS (
+                        SELECT 1 FROM mineral_elements WHERE element_id = food_element_id
+                    )),
+                    CONSTRAINT check_vegetal_not_feeding CHECK (NOT EXISTS (
+                        SELECT 1 FROM vegetal_elements WHERE element_id = element_id
+                    ))
+                );
             ''')
         cls.connection.commit()
 
@@ -99,6 +113,7 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS vegetal_elements;
                 DROP TABLE IF EXISTS animal_elements;
                 DROP TABLE IF EXISTS mineral_elements;
+                DROP TABLE IF EXISTS element_food;
             ''')
         cls.connection.close()
 
@@ -153,3 +168,8 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'mineral_elements';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'mineral_elements')
+
+            # Check element_food table exists
+            cursor.execute("SHOW TABLES LIKE 'element_food';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'element_food')

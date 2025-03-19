@@ -326,7 +326,7 @@ class TestNaturalElementsDataRequirements(TestCase):
 
 class TestAreaDataRequirements(TestCase):
     @classmethod
-    defsetUpClass(cls):
+    def setUpClass(cls):
         # Reuse the connection from previous tests
         cls.connection = pymysql.connect(
             host='localhost',
@@ -337,16 +337,16 @@ class TestAreaDataRequirements(TestCase):
         cls.cursor = cls.connection.cursor()
 
     @classmethod
-    deftearDownClass(cls):
+    def tearDownClass(cls):
         cls.connection.close()
 
-    defarea_elements_table_exists(self):
+    def area_elements_table_exists(self):
         """Test that the area_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'area_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Area elements table does not exist")
 
-    defarea_elements_has_required_columns(self):
+    def area_elements_has_required_columns(self):
         """Test that area_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'park_id';")
         park_id_column = self.cursor.fetchone()
@@ -364,7 +364,7 @@ class TestAreaDataRequirements(TestCase):
         number_of_individuals_column = self.cursor.fetchone()
         self.assertIsNotNone(number_of_individuals_column, "Area elements table does not have 'number_of_individuals' column")
 
-    defarea_elements_has_foreign_key_constraints(self):
+    def area_elements_has_foreign_key_constraints(self):
         """Test that area_elements table has foreign key constraints"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
@@ -390,7 +390,7 @@ class TestAreaDataRequirements(TestCase):
         element_fk = self.cursor.fetchone()
         self.assertIsNotNone(element_fk, "Area elements table does not have foreign key constraint on 'element_id'")
 
-    defarea_elements_composite_primary_key(self):
+    def area_elements_composite_primary_key(self):
         """Test that area_elements table has a composite primary key on park_id, area_number and element_id"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS

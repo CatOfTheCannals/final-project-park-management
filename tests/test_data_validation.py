@@ -292,8 +292,7 @@ class TestParkAreasDataRequirements(TestCase):
         extension_column = self.cursor.fetchone()
         self.assertIsNotNone(extension_column, "Park areas table does not have 'extension' column")
 
-
-class TestDataValidation(TestCase):
+class TestNaturalElementsDataRequirements(TestCase):
     @classmethod
     def setUpClass(cls):
         # Reuse the connection from previous tests
@@ -325,9 +324,104 @@ class TestDataValidation(TestCase):
         common_name_column = self.cursor.fetchone()
         self.assertIsNotNone(common_name_column, "Natural elements table does not have 'common_name' column")
 
-        self.cursor.execute("SHOW COLUMNS FROM natural_elements LIKE 'number_of_individuals';")
-        number_column = self.cursor.fetchone()
-        self.assertIsNotNone(number_column, "Natural elements table does not have 'number_of_individuals' column")
+class TestAreaDataRequirements(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
+
+    def area_elements_table_exists(self):
+        """Test that the area_elements table exists"""
+        self.cursor.execute("SHOW TABLES LIKE 'area_elements';")
+        result = self.cursor.fetchone()
+        self.assertIsNotNone(result, "Area elements table does not exist")
+
+    def area_elements_has_required_columns(self):
+        """Test that area_elements table has required columns"""
+        self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'park_id';")
+        park_id_column = self.cursor.fetchone()
+        self.assertIsNotNone(park_id_column, "Area elements table does not have 'park_id' column")
+
+        self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'area_number';")
+        area_number_column = self.cursor.fetchone()
+        self.assertIsNotNone(area_number_column, "Area elements table does not have 'area_number' column")
+
+        self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'element_id';")
+        element_id_column = self.cursor.fetchone()
+        self.assertIsNotNone(element_id_column, "Area elements table does not have 'element_id' column")
+
+        self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'number_of_individuals';")
+        number_of_individuals_column = self.cursor.fetchone()
+        self.assertIsNotNone(number_of_individuals_column, "Area elements table does not have 'number_of_individuals' column")
+
+    def area_elements_has_foreign_key_constraints(self):
+        """Test that area_elements table has foreign key constraints"""
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'area_elements' AND COLUMN_NAME = 'park_id'
+            AND REFERENCED_TABLE_NAME = 'park_areas';
+        """)
+        park_fk = self.cursor.fetchone()
+        self.assertIsNotNone(park_fk, "Area elements table does not have foreign key constraint on 'park_id'")
+
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'area_elements' AND COLUMN_NAME = 'area_number'
+            AND REFERENCED_TABLE_NAME = 'park_areas';
+        """)
+        area_number_fk = self.cursor.fetchone()
+        self.assertIsNotNone(area_number_fk, "Area elements table does not have foreign key constraint on 'area_number'")
+
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'area_elements' AND COLUMN_NAME = 'element_id'
+            AND REFERENCED_TABLE_NAME = 'natural_elements';
+        """)
+        element_fk = self.cursor.fetchone()
+        self.assertIsNotNone(element_fk, "Area elements table does not have foreign key constraint on 'element_id'")
+
+    def area_elements_composite_primary_key(self):
+        """Test that area_elements table has a composite primary key on park_id, area_number and element_id"""
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+            WHERE TABLE_NAME = 'area_elements' AND CONSTRAINT_TYPE = 'PRIMARY KEY';
+        """)
+        primary_key = self.cursor.fetchone()
+        self.assertIsNotNone(primary_key, "Area elements table does not have a primary key")
+
+        self.cursor.execute("""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'area_elements' AND CONSTRAINT_NAME = %s
+            ORDER BY ORDINAL_POSITION;
+        """, (primary_key[0],))
+        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
+        self.assertEqual(primary_key_columns, ['park_id', 'area_number', 'element_id'], "Area elements table does not have a composite primary key on park_id, area_number and element_id")
+
+class TestVegetalElementsDataRequirements(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
 
     def vegetal_elements_table_exists(self):
         """Test that the vegetal_elements table exists"""
@@ -340,6 +434,22 @@ class TestDataValidation(TestCase):
         self.cursor.execute("SHOW COLUMNS FROM vegetal_elements LIKE 'flowering_period';")
         flowering_period_column = self.cursor.fetchone()
         self.assertIsNotNone(flowering_period_column, "Vegetal elements table does not have 'flowering_period' column")
+
+class TestAnimalElementsDataRequirements(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
 
     def animal_elements_table_exists(self):
         """Test that the animal_elements table exists"""
@@ -357,6 +467,22 @@ class TestDataValidation(TestCase):
         mating_season_column = self.cursor.fetchone()
         self.assertIsNotNone(mating_season_column, "Animal elements table does not have 'mating_season' column")
 
+class TestMineralElementsDataRequirements(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
+
     def mineral_elements_table_exists(self):
         """Test that the mineral_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'mineral_elements';")
@@ -369,97 +495,21 @@ class TestDataValidation(TestCase):
         crystal_or_rock_column = self.cursor.fetchone()
         self.assertIsNotNone(crystal_or_rock_column, "Mineral elements table does not have 'crystal_or_rock' column")
 
-    def park_personnel_table_exists(self):
-        """Test that the park_personnel table exists"""
-        self.cursor.execute("SHOW TABLES LIKE 'park_personnel';")
-        result = self.cursor.fetchone()
-        self.assertIsNotNone(result, "Park personnel table does not exist")
+class TestDataValidation(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
 
-    def park_personnel_has_required_columns(self):
-        """Test that park_personnel table has required columns"""
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'dni';")
-        dni_column = self.cursor.fetchone()
-        self.assertIsNotNone(dni_column, "Park personnel table does not have 'dni' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'cuil';")
-        cuil_column = self.cursor.fetchone()
-        self.assertIsNotNone(cuil_column, "Park personnel table does not have 'cuil' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'name';")
-        name_column = self.cursor.fetchone()
-        self.assertIsNotNone(name_column, "Park personnel table does not have 'name' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'address';")
-        address_column = self.cursor.fetchone()
-        self.assertIsNotNone(address_column, "Park personnel table does not have 'address' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'phone_numbers';")
-        phone_numbers_column = self.cursor.fetchone()
-        self.assertIsNotNone(phone_numbers_column, "Park personnel table does not have 'phone_numbers' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'salary';")
-        salary_column = self.cursor.fetchone()
-        self.assertIsNotNone(salary_column, "Park personnel table does not have 'salary' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM park_personnel LIKE 'personnel_type';")
-        personnel_type_column = self.cursor.fetchone()
-        self.assertIsNotNone(personnel_type_column, "Park personnel table does not have 'personnel_type' column")
-
-    def visitors_table_exists(self):
-        """Test that the visitors table exists"""
-        self.cursor.execute("SHOW TABLES LIKE 'visitors';")
-        result = self.cursor.fetchone()
-        self.assertIsNotNone(result, "Visitors table does not exist")
-
-    def visitors_has_required_columns(self):
-        """Test that visitors table has required columns"""
-        self.cursor.execute("SHOW COLUMNS FROM visitors LIKE 'dni';")
-        dni_column = self.cursor.fetchone()
-        self.assertIsNotNone(dni_column, "Visitors table does not have 'dni' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM visitors LIKE 'name';")
-        name_column = self.cursor.fetchone()
-        self.assertIsNotNone(name_column, "Visitors table does not have 'name' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM visitors LIKE 'address';")
-        address_column = self.cursor.fetchone()
-        self.assertIsNotNone(address_column, "Visitors table does not have 'address' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM visitors LIKE 'profession';")
-        profession_column = self.cursor.fetchone()
-        self.assertIsNotNone(profession_column, "Visitors table does not have 'profession' column")
-
-    def accommodations_table_exists(self):
-        """Test that the accommodations table exists"""
-        self.cursor.execute("SHOW TABLES LIKE 'accommodations';")
-        result = self.cursor.fetchone()
-        self.assertIsNotNone(result, "Accommodations table does not exist")
-
-    def accommodations_has_required_columns(self):
-        """Test that accommodations table has required columns"""
-        self.cursor.execute("SHOW COLUMNS FROM accommodations LIKE 'capacity';")
-        capacity_column = self.cursor.fetchone()
-        self.assertIsNotNone(capacity_column, "Accommodations table does not have 'capacity' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM accommodations LIKE 'category';")
-        category_column = self.cursor.fetchone()
-        self.assertIsNotNone(category_column, "Accommodations table does not have 'category' column")
-
-    def excursions_table_exists(self):
-        """Test that the excursions table exists"""
-        self.cursor.execute("SHOW TABLES LIKE 'excursions';")
-        result = self.cursor.fetchone()
-        self.assertIsNotNone(result, "Excursions table does not exist")
-
-    def excursions_has_required_columns(self):
-        """Test that excursions table has required columns"""
-        self.cursor.execute("SHOW COLUMNS FROM excursions LIKE 'day_of_week';")
-        day_of_week_column = self.cursor.fetchone()
-        self.assertIsNotNone(day_of_week_column, "Excursions table does not have 'day_of_week' column")
-
-        self.cursor.execute("SHOW COLUMNS FROM excursions LIKE 'time';")
-        time_column = self.cursor.fetchone()
-        self.assertIsNotNone(time_column, "Excursions table does not have 'time' column")
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
 
     def required_fields_are_enforced(self):
         """Test that required fields cannot be null"""

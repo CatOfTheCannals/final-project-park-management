@@ -326,7 +326,7 @@ class TestNaturalElementsDataRequirements(TestCase):
 
 class TestAreaDataRequirements(TestCase):
     @classmethod
-    def setUpClass(cls):
+    defsetUpClass(cls):
         # Reuse the connection from previous tests
         cls.connection = pymysql.connect(
             host='localhost',
@@ -337,16 +337,16 @@ class TestAreaDataRequirements(TestCase):
         cls.cursor = cls.connection.cursor()
 
     @classmethod
-    def tearDownClass(cls):
+    deftearDownClass(cls):
         cls.connection.close()
 
-    def area_elements_table_exists(self):
+    defarea_elements_table_exists(self):
         """Test that the area_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'area_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Area elements table does not exist")
 
-    def area_elements_has_required_columns(self):
+    defarea_elements_has_required_columns(self):
         """Test that area_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'park_id';")
         park_id_column = self.cursor.fetchone()
@@ -364,7 +364,7 @@ class TestAreaDataRequirements(TestCase):
         number_of_individuals_column = self.cursor.fetchone()
         self.assertIsNotNone(number_of_individuals_column, "Area elements table does not have 'number_of_individuals' column")
 
-    def area_elements_has_foreign_key_constraints(self):
+    defarea_elements_has_foreign_key_constraints(self):
         """Test that area_elements table has foreign key constraints"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
@@ -390,7 +390,7 @@ class TestAreaDataRequirements(TestCase):
         element_fk = self.cursor.fetchone()
         self.assertIsNotNone(element_fk, "Area elements table does not have foreign key constraint on 'element_id'")
 
-    def area_elements_composite_primary_key(self):
+    defarea_elements_composite_primary_key(self):
         """Test that area_elements table has a composite primary key on park_id, area_number and element_id"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -495,6 +495,73 @@ class TestMineralElementsDataRequirements(TestCase):
         crystal_or_rock_column = self.cursor.fetchone()
         self.assertIsNotNone(crystal_or_rock_column, "Mineral elements table does not have 'crystal_or_rock' column")
 
+class TestElementFoodDataRequirements(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse the connection from previous tests
+        cls.connection = pymysql.connect(
+            host='localhost',
+            user='root',
+            password='',
+            db='park_management'
+        )
+        cls.cursor = cls.connection.cursor()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
+
+    def test_element_food_table_exists(self):
+        """Test that the element_food table exists"""
+        self.cursor.execute("SHOW TABLES LIKE 'element_food';")
+        result = self.cursor.fetchone()
+        self.assertIsNotNone(result, "Element_food table does not exist")
+
+    def test_element_food_has_required_columns(self):
+        """Test that element_food table has required columns"""
+        self.cursor.execute("SHOW COLUMNS FROM element_food LIKE 'element_id';")
+        element_id_column = self.cursor.fetchone()
+        self.assertIsNotNone(element_id_column, "Element_food table does not have 'element_id' column")
+
+        self.cursor.execute("SHOW COLUMNS FROM element_food LIKE 'food_element_id';")
+        food_element_id_column = self.cursor.fetchone()
+        self.assertIsNotNone(food_element_id_column, "Element_food table does not have 'food_element_id' column")
+
+    def test_element_food_foreign_key_constraints(self):
+        """Test that element_food table has foreign key constraints"""
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'element_food' AND COLUMN_NAME = 'element_id'
+            AND REFERENCED_TABLE_NAME = 'natural_elements';
+        """)
+        element_fk = self.cursor.fetchone()
+        self.assertIsNotNone(element_fk, "Element_food table does not have foreign key constraint on 'element_id'")
+
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'element_food' AND COLUMN_NAME = 'food_element_id'
+            AND REFERENCED_TABLE_NAME = 'natural_elements';
+        """)
+        food_element_fk = self.cursor.fetchone()
+        self.assertIsNotNone(food_element_fk, "Element_food table does not have foreign key constraint on 'food_element_id'")
+
+    def test_element_food_composite_primary_key(self):
+        """Test that element_food table has a composite primary key on element_id and food_element_id"""
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+            WHERE TABLE_NAME = 'element_food' AND CONSTRAINT_TYPE = 'PRIMARY KEY';
+        """)
+        primary_key = self.cursor.fetchone()
+        self.assertIsNotNone(primary_key, "Element_food table does not have a primary key")
+
+        self.cursor.execute("""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'element_food' AND CONSTRAINT_NAME = %s
+            ORDER BY ORDINAL_POSITION;
+        """, (primary_key[0],))
+        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
+        self.assertEqual(primary_key_columns, ['element_id', 'food_element_id'], "Element_food table does not have a composite primary key on element_id and food_element_id")
+
 class TestDataValidation(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -518,13 +585,4 @@ class TestDataValidation(TestCase):
             self.cursor.execute("INSERT INTO provinces (name) VALUES (NULL);")
             self.fail("Should not allow NULL name in provinces table")
         except pymysql.err.IntegrityError:
-            self.connection.rollback() # Rollback the transaction
-
-    def data_types_are_enforced(self):
-        """Test that correct data types are enforced"""
-        try:
-            # Try inserting invalid string into numeric field
-            self.cursor.execute("INSERT INTO parks (total_area) VALUES ('invalid');")
-            self.fail("Should not allow non-numeric value in total_area column")
-        except pymysql.err.ProgrammingError:
             self.connection.rollback() # Rollback the transaction

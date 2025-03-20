@@ -96,6 +96,41 @@ class TestDatabaseConnection(TestCase):
                         SELECT 1 FROM vegetal_elements WHERE element_id = element_id
                     ))
                 );
+
+                CREATE TABLE IF NOT EXISTS personnel (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    DNI VARCHAR(20) NOT NULL UNIQUE,
+                    CUIL VARCHAR(20) NOT NULL UNIQUE,
+                    name VARCHAR(255) NOT NULL,
+                    address VARCHAR(255),
+                    phone_numbers VARCHAR(255),
+                    salary DECIMAL(10, 2)
+                );
+
+                CREATE TABLE IF NOT EXISTS management_personnel (
+                    personnel_id INT PRIMARY KEY,
+                    entrance_number INT,
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS surveillance_personnel (
+                    personnel_id INT PRIMARY KEY,
+                    vehicle_type VARCHAR(255),
+                    vehicle_registration VARCHAR(20),
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS research_personnel (
+                    personnel_id INT PRIMARY KEY,
+                    title VARCHAR(255),
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS conservation_personnel (
+                    personnel_id INT PRIMARY KEY,
+                    specialty VARCHAR(255),
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                );
             ''')
         cls.connection.commit()
 
@@ -114,6 +149,11 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS animal_elements;
                 DROP TABLE IF EXISTS mineral_elements;
                 DROP TABLE IF EXISTS element_food;
+                DROP TABLE IF EXISTS management_personnel;
+                DROP TABLE IF EXISTS surveillance_personnel;
+                DROP TABLE IF EXISTS research_personnel;
+                DROP TABLE IF EXISTS conservation_personnel;
+                DROP TABLE IF EXISTS personnel;
             ''')
         cls.connection.close()
 
@@ -173,3 +213,28 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'element_food';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'element_food')
+
+            # Check personnel table exists
+            cursor.execute("SHOW TABLES LIKE 'personnel';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'personnel')
+
+            # Check management_personnel table exists
+            cursor.execute("SHOW TABLES LIKE 'management_personnel';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'management_personnel')
+
+            # Check surveillance_personnel table exists
+            cursor.execute("SHOW TABLES LIKE 'surveillance_personnel';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'surveillance_personnel')
+
+            # Check research_personnel table exists
+            cursor.execute("SHOW TABLES LIKE 'research_personnel';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'research_personnel')
+
+            # Check conservation_personnel table exists
+            cursor.execute("SHOW TABLES LIKE 'conservation_personnel';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'conservation_personnel')

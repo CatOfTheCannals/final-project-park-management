@@ -24,12 +24,24 @@ class TestResearchPersonnelDataRequirements(unittest.TestCase):
             result = cursor.fetchone()
             cls.personnel_id = result['id']
 
+        # Insert a test research project record
+        with cls.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO research_projects (budget, duration) VALUES (10000.00, '12 months')")
+            cls.connection.commit()
+
+            # Get the project_id of the inserted record
+            cursor.execute("SELECT id FROM research_projects WHERE budget = 10000.00")
+            result = cursor.fetchone()
+            cls.project_id = result['id']
+
+
     @classmethod
     def tearDownClass(cls):
         # Clean up test data
         with cls.connection.cursor() as cursor:
             cursor.execute("DELETE FROM research_personnel WHERE personnel_id = %s", (cls.personnel_id,))
             cursor.execute("DELETE FROM personnel WHERE DNI = 'TEST33333333'")
+            cursor.execute("DELETE FROM research_projects WHERE id = %s", (cls.project_id,))
         cls.connection.commit()
         cls.connection.close()
 
@@ -49,6 +61,10 @@ class TestResearchPersonnelDataRequirements(unittest.TestCase):
         title_column = self.cursor.fetchone()
         self.assertIsNotNone(title_column, "Research_personnel table does not have 'title' column")
 
+        self.cursor.execute("SHOW COLUMNS FROM research_personnel LIKE 'project_id';")
+        project_id_column = self.cursor.fetchone()
+        self.assertIsNotNone(project_id_column, "Research_personnel table does not have 'project_id' column")
+
     def test_research_personnel_foreign_key_constraint(self):
         """Test that research_personnel table has foreign key constraint on personnel_id"""
         self.cursor.execute("""
@@ -59,11 +75,19 @@ class TestResearchPersonnelDataRequirements(unittest.TestCase):
         personnel_fk = self.cursor.fetchone()
         self.assertIsNotNone(personnel_fk, "Research_personnel table does not have foreign key constraint on 'personnel_id'")
 
+        self.cursor.execute("""
+            SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_NAME = 'research_personnel' AND COLUMN_NAME = 'project_id'
+            AND REFERENCED_TABLE_NAME = 'research_projects';
+        """)
+        project_fk = self.cursor.fetchone()
+        self.assertIsNotNone(project_fk, "Research_personnel table does not have foreign key constraint on 'project_id'")
+
     def test_research_personnel_data_insertion(self):
         """Test data insertion into research_personnel table"""
         try:
             # Insert valid data
-            self.cursor.execute("INSERT INTO research_personnel (personnel_id, title) VALUES (%s, 'PhD in Biology')", (self.personnel_id,))
+            self.cursor.execute("INSERT INTO research_personnel (personnel_id, title, project_id) VALUES (%s, 'PhD in Biology', %s)", (self.personnel_id, self.project_id))
             self.connection.commit()
 
             # Verify that the data was inserted
@@ -79,9 +103,18 @@ class TestResearchPersonnelDataRequirements(unittest.TestCase):
         """Test foreign key constraint enforcement in research_personnel table"""
         try:
             # Try inserting invalid data (non-existent personnel_id)
-            self.cursor.execute("INSERT INTO research_personnel (personnel_id, title) VALUES (999, 'PhD in Biology')")
+            self.cursor.execute("INSERT INTO research_personnel (personnel_id, title, project_id) VALUES (999, 'PhD in Biology', %s)", (self.project_id,))
             self.connection.commit()
             self.fail("Should not allow insertion of data with non-existent personnel_id")
+        except pymysql.err.IntegrityError as e:
+            self.connection.rollback()
+            self.assertIn("foreign key constraint fails", str(e).lower(), "Error message does not indicate foreign key constraint violation")
+
+        try:
+            # Try inserting invalid data (non-existent project_id)
+            self.cursor.execute("INSERT INTO research_personnel (personnel_id, title, project_id) VALUES (%s, 'PhD in Biology', 999)", (self.personnel_id,))
+            self.connection.commit()
+            self.fail("Should not allow insertion of data with non-existent project_id")
         except pymysql.err.IntegrityError as e:
             self.connection.rollback()
             self.assertIn("foreign key constraint fails", str(e).lower(), "Error message does not indicate foreign key constraint violation")

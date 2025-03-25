@@ -120,10 +120,18 @@ class TestDatabaseConnection(TestCase):
                     FOREIGN KEY (personnel_id) REFERENCES personnel(id)
                 );
 
+                CREATE TABLE IF NOT EXISTS research_projects (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    budget DECIMAL(15,2),
+                    duration VARCHAR(255)
+                );
+
                 CREATE TABLE IF NOT EXISTS research_personnel (
                     personnel_id INT PRIMARY KEY,
                     title VARCHAR(255),
-                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                    project_id INT,
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id),
+                    FOREIGN KEY (project_id) REFERENCES research_projects(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS conservation_personnel (
@@ -152,6 +160,7 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS management_personnel;
                 DROP TABLE IF EXISTS surveillance_personnel;
                 DROP TABLE IF EXISTS research_personnel;
+                DROP TABLE IF EXISTS research_projects;
                 DROP TABLE IF EXISTS conservation_personnel;
                 DROP TABLE IF EXISTS personnel;
             ''')
@@ -228,6 +237,11 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'surveillance_personnel';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'surveillance_personnel')
+
+            # Check research_projects table exists
+            cursor.execute("SHOW TABLES LIKE 'research_projects';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'research_projects')
 
             # Check research_personnel table exists
             cursor.execute("SHOW TABLES LIKE 'research_personnel';")

@@ -6,33 +6,35 @@
 5. The project should include documentation (Carátula, Introducción, ER model, Relational model, Assumptions, Physical design, Code, Conclusions).
 
 # Data Requirements
-1. Store information about provinces, including the responsible organization for parks. Each province should have one and only one responsible organization for its parks.
-2.a. Store information about parks, including name, declaration date, contact email, code.
+1. Store information about provinces, including the responsible organization for parks. Each province should have one and only one responsible organization for its parks. TESTED
+2.a. Store information about parks, including name, declaration date, contact email, code. TESTED
 2.b. Por motivos de eficiencia se desea favorecer las consultas referentes al número
 de parques existentes en cada Provincia and la superficie total declarada parque nat-
 ural en cada Provincia.
-2.c. Un parque puede estar compartido por más de una Provincia.
-3.a. Store information about park areas, including name and extension. 
-3.b. A park is composed of several areas.
-4. Store information about natural elements (vegetal, animal, mineral) residing in each area, including scientific name, common name, and number of individuals.
-5. Store specific information for vegetal elements (if they flower and when is their flowering period).
-6. Store specific information for animal elements (diet (herbívora, carnívora u omnívora), mating period).
-7. Store specific information for mineral elements (crystal or rock).
-8. Track which elements serve as food for other elements (excluding on anything feeding on minerals and vegetal elements feeding on other elements).
-9. Store information about park personnel (DNI, CUIL, name, address, phone numbers, salary).
-10. Differentiate between different types of personnel: management, surveillance, research, and conservation.
+2.b.solution. in order to be able to get the totfl park area for each province, we need to know how much surface/extension is split between provinces for interprovince parks. TESTED
+2.b.maybe. add a composite index on park_provinces (province_id, extension_in_province)
+2.c. Un parque puede estar compartido por más de una Provincia. TESTED
+3.a. Store information about park areas, including name and extension.  TESTED
+3.b. A park is composed of several areas. TESTED
+4. Store information about natural elements (vegetal, animal, mineral) residing in each area, including scientific name, common name, and number of individuals. TESTED
+5. Store specific information for vegetal elements (if they flower and when is their flowering period). TESTED
+6. Store specific information for animal elements (diet (herbívora, carnívora u omnívora), mating period). TESTED
+7. Store specific information for mineral elements (crystal or rock). TESTED
+8. Track which elements serve as food for other elements (excluding on anything feeding on minerals and vegetal elements feeding on other elements). TESTED
+9. Store information about park personnel (DNI, CUIL, name, address, phone numbers, salary). TESTED
+10. Differentiate between different types of personnel: management, surveillance, research, and conservation. TESTED
 10.a. Personal de gestión: registra los datos de los visitantes del parque and están des-
-tinados en una entrada del parque (las entradas se identifican por un número).
+tinados en una entrada del parque (las entradas se identifican por un número). TESTED
 10.b. Personal de vigilancia: vigila un área determinada del parque que recorre en
 un vehículo (tipo and matrícula). Puede ocurrir que use el mismo vehículo para mas
-de un área, pero siempre es el mismo en cada área que vigila.
+de un área, pero siempre es el mismo en cada área que vigila. TESTED
 10.c.1. Personal investigador: Tiene una titulación que ha de recogerse and pueden re-
 alizar (incluso conjuntamente) proyectos de investigación sobre un determinado
-elemento. 
+elemento. TODO: change proyecto to be a foreign key to its table
 10.c.2. Un proyecto de investigación tiene un presupuesto and un periodo de real-
 ización.
 10.d. Personal de conservación: mantiene and conserva un área determinada del par-
-que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos).
+que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos). TESTED
 11. Store information about visitors (DNI, name, address, profession, and which accomodation they stay in (only one)).
 12. Store information about accommodations (capacity, category).
 13. Store information about excursions (days of the week, time, by foot or by vehicle), and which accommodations organize them (can be more than one). any visitor in a given park can come to any excursion in that park

@@ -93,10 +93,42 @@ class TestElementFoodDataRequirements(TestCase):
             ORDER BY ORDINAL_POSITION;
         """, (primary_key[0],))
         primary_key_columns = [column[0] for column in self.cursor.fetchall()]
+        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
         self.assertEqual(primary_key_columns, ['element_id', 'food_element_id'], "Element_food table does not have a composite primary key on element_id and food_element_id")
 
-    # Removed test_element_food_mineral_not_food_constraint because the
-    # corresponding CHECK constraint was removed from SQL due to limitations.
+    def test_element_food_mineral_not_food_constraint(self):
+        """Test that the trigger prevents minerals from being listed as food"""
+        try:
+            # Try inserting data where a mineral is a food source
+            self.cursor.execute("INSERT INTO element_food (element_id, food_element_id) VALUES (%s, %s)", (self.animal_id, self.mineral_id))
+            self.connection.commit()
+            self.fail("Should not allow a mineral to be a food source (Trigger failed)")
+        except pymysql.err.OperationalError as e: # Trigger SIGNAL raises OperationalError (SQLSTATE 45000)
+            self.connection.rollback()
+            # Check the specific error message from the trigger
+            self.assertIn("minerals cannot be food", str(e).lower(), "Error message does not indicate mineral not food constraint violation")
+        except pymysql.err.IntegrityError as e: # Fallback check if SIGNAL behaves differently
+             self.connection.rollback()
+             self.fail(f"Expected OperationalError due to trigger SIGNAL, but got IntegrityError: {e}")
+        except Exception as e:
+            self.connection.rollback()
+            self.fail(f"An unexpected error occurred: {e}")
 
-    # Removed test_element_food_vegetal_not_feeding_constraint because the
-    # corresponding CHECK constraint was removed from SQL due to limitations.
+
+    def test_element_food_vegetal_not_feeding_constraint(self):
+        """Test that the trigger prevents vegetal elements from feeding on other elements"""
+        try:
+            # Try inserting data where a vegetal element is feeding on another element
+            self.cursor.execute("INSERT INTO element_food (element_id, food_element_id) VALUES (%s, %s)", (self.vegetal_id, self.animal_id))
+            self.connection.commit()
+            self.fail("Should not allow a vegetal element to feed on another element (Trigger failed)")
+        except pymysql.err.OperationalError as e: # Trigger SIGNAL raises OperationalError (SQLSTATE 45000)
+            self.connection.rollback()
+            # Check the specific error message from the trigger
+            self.assertIn("vegetals cannot feed", str(e).lower(), "Error message does not indicate vegetal not feeding constraint violation")
+        except pymysql.err.IntegrityError as e: # Fallback check if SIGNAL behaves differently
+             self.connection.rollback()
+             self.fail(f"Expected OperationalError due to trigger SIGNAL, but got IntegrityError: {e}")
+        except Exception as e:
+            self.connection.rollback()
+            self.fail(f"An unexpected error occurred: {e}")

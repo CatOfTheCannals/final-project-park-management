@@ -84,6 +84,66 @@ CREATE TABLE IF NOT EXISTS element_food (
     -- This logic needs to be enforced at the application level or via triggers.
 );
 
+-- Triggers to enforce element_food constraints (MySQL < 8.0.16 CHECK alternative)
+DELIMITER //
+
+CREATE TRIGGER check_element_food_before_insert
+BEFORE INSERT ON element_food
+FOR EACH ROW
+BEGIN
+    DECLARE is_mineral INT;
+    DECLARE is_vegetal INT;
+
+    -- Check if food_element_id is a mineral
+    SELECT COUNT(*) INTO is_mineral
+    FROM mineral_elements me
+    WHERE me.element_id = NEW.food_element_id;
+
+    IF is_mineral > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Minerals cannot be food (element_food).';
+    END IF;
+
+    -- Check if element_id is a vegetal
+    SELECT COUNT(*) INTO is_vegetal
+    FROM vegetal_elements ve
+    WHERE ve.element_id = NEW.element_id;
+
+    IF is_vegetal > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Vegetals cannot feed on other elements (element_food).';
+    END IF;
+END;
+//
+
+CREATE TRIGGER check_element_food_before_update
+BEFORE UPDATE ON element_food
+FOR EACH ROW
+BEGIN
+    DECLARE is_mineral INT;
+    DECLARE is_vegetal INT;
+
+    -- Check if food_element_id is a mineral
+    SELECT COUNT(*) INTO is_mineral
+    FROM mineral_elements me
+    WHERE me.element_id = NEW.food_element_id;
+
+    IF is_mineral > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Minerals cannot be food (element_food).';
+    END IF;
+
+    -- Check if element_id is a vegetal
+    SELECT COUNT(*) INTO is_vegetal
+    FROM vegetal_elements ve
+    WHERE ve.element_id = NEW.element_id;
+
+    IF is_vegetal > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Vegetals cannot feed on other elements (element_food).';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+
 CREATE TABLE IF NOT EXISTS personnel (
     id INT AUTO_INCREMENT PRIMARY KEY,
     DNI VARCHAR(20) NOT NULL UNIQUE,

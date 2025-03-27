@@ -20,7 +20,7 @@ ural en cada Provincia.
 5. Store specific information for vegetal elements (if they flower and when is their flowering period). TESTED
 6. Store specific information for animal elements (diet (herbívora, carnívora u omnívora), mating period). TESTED
 7. Store specific information for mineral elements (crystal or rock). TESTED
-8. Track which elements serve as food for other elements (excluding on anything feeding on minerals and vegetal elements feeding on other elements). TESTED
+8. Track which elements serve as food for other elements (excluding on anything feeding on minerals and vegetal elements feeding on other elements). (Implemented via Triggers) TESTED
 9. Store information about park personnel (DNI, CUIL, name, address, phone numbers, salary). TESTED
 10. Differentiate between different types of personnel: management, surveillance, research, and conservation. TESTED
 10.a. Personal de gestión: registra los datos de los visitantes del parque and están des-

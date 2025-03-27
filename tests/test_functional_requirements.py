@@ -159,3 +159,61 @@ class TestFunctionalRequirements(TestCase):
 
         self.assertIsNotNone(result, "Query returned no result")
         self.assertEqual(result['visitor_count'], 3, "Expected 3 visitors in parks A and B")
+
+    def test_04_trigger_sends_email_on_species_decrease(self):
+        """Test Func Req 4: Trigger logs to email_log when species count decreases."""
+        # Use existing test data: Common plant (plant_common_id) in Park A (park_a_id), Area 1
+        initial_count = 100
+        decreased_count = 90
+
+        # Ensure the initial count is correct (redundant if setup is trusted, but good practice)
+        self.cursor.execute("""
+            SELECT number_of_individuals FROM area_elements
+            WHERE park_id = %s AND area_number = 1 AND element_id = %s;
+        """, (self.park_a_id, self.plant_common_id))
+        current_record = self.cursor.fetchone()
+        self.assertIsNotNone(current_record, "Test data for area_elements not found")
+        # If the count isn't the expected initial, update it first without triggering the log check
+        if current_record['number_of_individuals'] != initial_count:
+             self.cursor.execute("""
+                UPDATE area_elements SET number_of_individuals = %s
+                WHERE park_id = %s AND area_number = 1 AND element_id = %s;
+            """, (initial_count, self.park_a_id, self.plant_common_id))
+             self.connection.commit()
+
+
+        # Clear any previous logs for this specific test case to avoid interference
+        self.cursor.execute("DELETE FROM email_log WHERE element_scientific_name = 'Plantus communis' AND park_email = 'parqueA@example.com';")
+        self.connection.commit()
+
+        # Perform the update that should trigger the logging
+        self.cursor.execute("""
+            UPDATE area_elements SET number_of_individuals = %s
+            WHERE park_id = %s AND area_number = 1 AND element_id = %s;
+        """, (decreased_count, self.park_a_id, self.plant_common_id))
+        self.connection.commit()
+
+        # Check if the log entry was created
+        self.cursor.execute("""
+            SELECT park_email, element_scientific_name, old_count, new_count
+            FROM email_log
+            WHERE park_email = 'parqueA@example.com' AND element_scientific_name = 'Plantus communis'
+            ORDER BY log_timestamp DESC LIMIT 1;
+        """)
+        log_entry = self.cursor.fetchone()
+
+        self.assertIsNotNone(log_entry, "Trigger did not insert a log entry into email_log")
+        self.assertEqual(log_entry['park_email'], 'parqueA@example.com', "Logged park email is incorrect")
+        self.assertEqual(log_entry['element_scientific_name'], 'Plantus communis', "Logged element name is incorrect")
+        self.assertEqual(log_entry['old_count'], initial_count, "Logged old_count is incorrect")
+        self.assertEqual(log_entry['new_count'], decreased_count, "Logged new_count is incorrect")
+
+        # Clean up: Restore original count (optional, depends if other tests rely on it)
+        # self.cursor.execute("""
+        #     UPDATE area_elements SET number_of_individuals = %s
+        #     WHERE park_id = %s AND area_number = 1 AND element_id = %s;
+        # """, (initial_count, self.park_a_id, self.plant_common_id))
+        # self.connection.commit()
+        # Clean up the log entry created by this test
+        self.cursor.execute("DELETE FROM email_log WHERE element_scientific_name = 'Plantus communis' AND park_email = 'parqueA@example.com';")
+        self.connection.commit()

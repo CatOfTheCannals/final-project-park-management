@@ -28,6 +28,7 @@ This project aims to develop a database system for managing information about na
 - **Research Element Link:** Implemented via `research_projects.element_id` foreign key, assuming a project focuses on one primary element.
 - **Conservation Area Link:** Implemented via `conservation_personnel.park_id` and `conservation_personnel.area_number` composite foreign key, assuming a conservation staff member is assigned to one specific area.
 - **Element Food Constraints:** The constraints preventing minerals from being food (`check_mineral_not_food`) and preventing plants from feeding (`check_vegetal_not_feeding`) are implemented using `BEFORE INSERT` and `BEFORE UPDATE` triggers on the `element_food` table. This approach was chosen because MySQL does not support subqueries within `CHECK` constraints.
+- **Visitor-Excursion Link:** A many-to-many relationship table `visitor_excursions` was added to link visitors to the excursions they attend, fulfilling requirement 13.c.
 
 ## Trade-offs
 - **Test Focus vs Implementation Speed:** By focusing on tests first, we ensure quality but may initially be slower than direct implementation.

@@ -227,6 +227,14 @@ CREATE TABLE IF NOT EXISTS accommodation_excursions (
     FOREIGN KEY (excursion_id) REFERENCES excursions(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS visitor_excursions (
+    visitor_id INT,
+    excursion_id INT,
+    PRIMARY KEY (visitor_id, excursion_id),
+    FOREIGN KEY (visitor_id) REFERENCES visitors(id) ON DELETE CASCADE,
+    FOREIGN KEY (excursion_id) REFERENCES excursions(id) ON DELETE CASCADE
+);
+
 -- Table for Trigger Testing (Func Req 4)
 CREATE TABLE IF NOT EXISTS email_log (
     log_id INT AUTO_INCREMENT PRIMARY KEY,

@@ -38,15 +38,15 @@ que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos). (I
 11. Store information about visitors (DNI, name, address, profession, and which accomodation (foreign key) they stay in (only one)). TESTED
 12. Store information about accommodations (capacity, category). TESTED
 13.a. Store information about excursions (days of the week, time, by foot or by vehicle), TESTED
-13.b. and which accommodations organize them (can be more than one). (suggests many to many relation)
-13.c. any visitor in a given park can come to any excursion in that park (suggests many to many relation)
+13.b. and which accommodations organize them (can be more than one). (Implemented via accommodation_excursions M:N table) TESTED
+13.c. any visitor in a given park can come to any excursion in that park (suggests many to many relation). (Implemented via visitor_excursions M:N table) TESTED
 
 # Functional Requirements
-1. Determine the province with the most natural parks.
-2. Identify vegetal species found in at least half of the parks.
-3. Count the number of visitors in parks with specific codes (A and B).
-4. Implement a trigger that sends an email to the park's contact email when the quantity of a species decreases.
-5. Implement database constraints based on the problem domain.
+1. Determine the province with the most natural parks. TESTED
+2. Identify vegetal species found in at least half of the parks. TESTED
+3. Count the number of visitors in parks with specific codes (A and B). TESTED
+4. Implement a trigger that sends an email to the park's contact email when the quantity of a species decreases. (Implemented via logging trigger) TESTED
+5. Implement database constraints based on the problem domain. (PK, FK, UNIQUE, NOT NULL, ENUM, Triggers) TESTED
 
 # Additional Requirements from 2019 TP
 1. Verify if public information can be used in the model (e.g., a list of national parks). DONE, information already in data dir

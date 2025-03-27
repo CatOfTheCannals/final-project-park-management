@@ -46,10 +46,10 @@ class TestProvincesDataRequirements(TestCase):
             self.connection.rollback()
             self.assertIn("cannot be null", str(e).lower(), "Error message does not indicate NULL constraint violation")
 
-    def test_provinces_has_unique_responsible_organization(self):
-        """Test that each province has one and only one responsible organization"""
+    def test_provinces_responsible_organization_is_required(self):
+        """Test that responsible_organization is required (NOT NULL and not empty)"""
         try:
-            # Insert a province without a responsible organization
+            # Insert a province without a responsible organization (should fail due to NOT NULL)
             self.cursor.execute("INSERT INTO provinces (name) VALUES ('La Pampa')")
             self.connection.commit()
             self.fail("Should not allow a province without a responsible organization")

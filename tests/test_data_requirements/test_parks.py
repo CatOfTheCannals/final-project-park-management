@@ -42,3 +42,9 @@ class TestParksDataRequirements(TestCase):
         self.cursor.execute("SHOW COLUMNS FROM parks LIKE 'total_area';")
         area_column = self.cursor.fetchone()
         self.assertIsNotNone(area_column, "Parks table does not have 'total_area' column")
+
+    def test_parks_has_code_column(self):
+        """Test that parks table has code column"""
+        self.cursor.execute("SHOW COLUMNS FROM parks LIKE 'code';")
+        code_column = self.cursor.fetchone()
+        self.assertIsNotNone(code_column, "Parks table does not have 'code' column")

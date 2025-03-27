@@ -27,6 +27,7 @@ class TestDatabaseConnection(TestCase):
                     name VARCHAR(255) NOT NULL,
                     declaration_date DATE NOT NULL,
                     contact_email VARCHAR(255),
+                    code VARCHAR(10) UNIQUE NOT NULL,
                     total_area DECIMAL(15,2)
                 );
 
@@ -153,7 +154,9 @@ class TestDatabaseConnection(TestCase):
                     address VARCHAR(255),
                     profession VARCHAR(255),
                     accommodation_id INT,
-                    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id)
+                    park_id INT,
+                    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id),
+                    FOREIGN KEY (park_id) REFERENCES parks(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS excursions (
@@ -176,28 +179,29 @@ class TestDatabaseConnection(TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up test tables and close connection
+        # Drop order matters due to foreign key constraints
         with cls.connection.cursor() as cursor:
             cursor.execute('''
-                DROP TABLE IF EXISTS provinces;
-                DROP TABLE IF EXISTS parks;
-                DROP TABLE IF EXISTS park_provinces;
-                DROP TABLE IF EXISTS park_areas;
-                DROP TABLE IF EXISTS area_elements;
-                DROP TABLE IF EXISTS natural_elements;
+                DROP TABLE IF EXISTS accommodation_excursions;
+                DROP TABLE IF EXISTS visitors;
+                DROP TABLE IF EXISTS accommodations;
+                DROP TABLE IF EXISTS excursions;
+                DROP TABLE IF EXISTS conservation_personnel;
+                DROP TABLE IF EXISTS research_personnel;
+                DROP TABLE IF EXISTS research_projects;
+                DROP TABLE IF EXISTS surveillance_personnel;
+                DROP TABLE IF EXISTS management_personnel;
+                DROP TABLE IF EXISTS personnel;
+                DROP TABLE IF EXISTS element_food;
                 DROP TABLE IF EXISTS vegetal_elements;
                 DROP TABLE IF EXISTS animal_elements;
                 DROP TABLE IF EXISTS mineral_elements;
-                DROP TABLE IF EXISTS element_food;
-                DROP TABLE IF EXISTS management_personnel;
-                DROP TABLE IF EXISTS surveillance_personnel;
-                DROP TABLE IF EXISTS research_personnel;
-                DROP TABLE IF EXISTS research_projects;
-                DROP TABLE IF EXISTS conservation_personnel;
-                DROP TABLE IF EXISTS accommodations;
-                DROP TABLE IF EXISTS visitors;
-                DROP TABLE IF EXISTS excursions;
-                DROP TABLE IF EXISTS accommodation_excursions;
-                DROP TABLE IF EXISTS personnel;
+                DROP TABLE IF EXISTS area_elements;
+                DROP TABLE IF EXISTS natural_elements;
+                DROP TABLE IF EXISTS park_areas;
+                DROP TABLE IF EXISTS park_provinces;
+                DROP TABLE IF EXISTS parks;
+                DROP TABLE IF EXISTS provinces;
             ''')
         cls.connection.close()
 

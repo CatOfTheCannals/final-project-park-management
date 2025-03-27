@@ -139,6 +139,22 @@ class TestDatabaseConnection(TestCase):
                     specialty VARCHAR(255),
                     FOREIGN KEY (personnel_id) REFERENCES personnel(id)
                 );
+
+                CREATE TABLE IF NOT EXISTS accommodations (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    capacity INT NOT NULL,
+                    category VARCHAR(255)
+                );
+
+                CREATE TABLE IF NOT EXISTS visitors (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    DNI VARCHAR(20) NOT NULL UNIQUE,
+                    name VARCHAR(255) NOT NULL,
+                    address VARCHAR(255),
+                    profession VARCHAR(255),
+                    accommodation_id INT,
+                    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id)
+                );
             ''')
         cls.connection.commit()
 
@@ -162,6 +178,8 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS research_personnel;
                 DROP TABLE IF EXISTS research_projects;
                 DROP TABLE IF EXISTS conservation_personnel;
+                DROP TABLE IF EXISTS accommodations;
+                DROP TABLE IF EXISTS visitors;
                 DROP TABLE IF EXISTS personnel;
             ''')
         cls.connection.close()
@@ -252,3 +270,13 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'conservation_personnel';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'conservation_personnel')
+
+            # Check accommodations table exists
+            cursor.execute("SHOW TABLES LIKE 'accommodations';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'accommodations')
+
+            # Check visitors table exists
+            cursor.execute("SHOW TABLES LIKE 'visitors';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'visitors')

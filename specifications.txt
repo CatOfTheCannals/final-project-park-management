@@ -30,11 +30,11 @@ un vehículo (tipo and matrícula). Puede ocurrir que use el mismo vehículo par
 de un área, pero siempre es el mismo en cada área que vigila. TESTED
 10.c.1. Personal investigador: Tiene una titulación que ha de recogerse and pueden re-
 alizar (incluso conjuntamente) proyectos de investigación sobre un determinado
-elemento. TESTED
+elemento. (Implemented via research_projects.element_id FK) TESTED
 10.c.2. Un proyecto de investigación tiene un presupuesto and un periodo de real-
 ización. TESTED
 10.d. Personal de conservación: mantiene and conserva un área determinada del par-
-que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos). TESTED
+que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos). (Implemented via conservation_personnel FK to park_areas) TESTED
 11. Store information about visitors (DNI, name, address, profession, and which accomodation (foreign key) they stay in (only one)). TESTED
 12. Store information about accommodations (capacity, category). TESTED
 13.a. Store information about excursions (days of the week, time, by foot or by vehicle), TESTED

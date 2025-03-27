@@ -18,13 +18,13 @@ class TestAnimalElementsDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def animal_elements_table_exists(self):
+    def test_animal_elements_table_exists(self):
         """Test that the animal_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'animal_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Animal elements table does not exist")
 
-    def animal_elements_has_required_columns(self):
+    def test_animal_elements_has_required_columns(self):
         """Test that animal_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM animal_elements LIKE 'diet';")
         diet_column = self.cursor.fetchone()

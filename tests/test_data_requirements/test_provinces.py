@@ -19,13 +19,13 @@ class TestProvincesDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def provinces_table_exists(self):
+    def test_provinces_table_exists(self):
         """Test that the provinces table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'provinces';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Provinces table does not exist")
 
-    def provinces_has_required_columns(self):
+    def test_provinces_has_required_columns(self):
         """Test that provinces table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM provinces LIKE 'name';")
         name_column = self.cursor.fetchone()
@@ -35,7 +35,7 @@ class TestProvincesDataRequirements(TestCase):
         org_column = self.cursor.fetchone()
         self.assertIsNotNone(org_column, "Provinces table does not have 'responsible_organization' column")
 
-    def provinces_responsible_organization_not_null(self):
+    def test_provinces_responsible_organization_not_null(self):
         """Test that provinces table enforces NOT NULL constraint on responsible_organization"""
         try:
             # Try inserting a new province with a NULL responsible_organization

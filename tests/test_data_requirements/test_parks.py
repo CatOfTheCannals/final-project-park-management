@@ -25,7 +25,7 @@ class TestParksDataRequirements(TestCase):
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Parks table does not exist")
 
-    def parks_has_required_columns(self):
+    def test_parks_has_required_columns(self):
         """Test that parks table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM parks LIKE 'name';")
         name_column = self.cursor.fetchone()

@@ -107,7 +107,7 @@ class TestParkProvincesDataRequirements(TestCase):
             self.connection.rollback()
             self.fail(f"Error inserting data into park_provinces table: {e}")
 
-    def required_fields_are_enforced(self):
+    def test_required_fields_are_enforced(self):
         """Test that required fields cannot be null"""
         try:
             # Try inserting invalid data into provinces table

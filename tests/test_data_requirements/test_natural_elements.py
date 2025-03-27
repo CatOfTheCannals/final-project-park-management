@@ -18,13 +18,13 @@ class TestNaturalElementsDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def natural_elements_table_exists(self):
+    def test_natural_elements_table_exists(self):
         """Test that the natural_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'natural_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Natural elements table does not exist")
 
-    def natural_elements_has_required_columns(self):
+    def test_natural_elements_has_required_columns(self):
         """Test that natural_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM natural_elements LIKE 'scientific_name';")
         scientific_name_column = self.cursor.fetchone()
@@ -50,13 +50,13 @@ class TestAreaDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def area_elements_table_exists(self):
+    def test_area_elements_table_exists(self):
         """Test that the area_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'area_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Area elements table does not exist")
 
-    def area_elements_has_required_columns(self):
+    def test_area_elements_has_required_columns(self):
         """Test that area_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM area_elements LIKE 'park_id';")
         park_id_column = self.cursor.fetchone()
@@ -74,7 +74,7 @@ class TestAreaDataRequirements(TestCase):
         number_of_individuals_column = self.cursor.fetchone()
         self.assertIsNotNone(number_of_individuals_column, "Area elements table does not have 'number_of_individuals' column")
 
-    def area_elements_has_foreign_key_constraints(self):
+    def test_area_elements_has_foreign_key_constraints(self):
         """Test that area_elements table has foreign key constraints"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
@@ -100,7 +100,7 @@ class TestAreaDataRequirements(TestCase):
         element_fk = self.cursor.fetchone()
         self.assertIsNotNone(element_fk, "Area elements table does not have foreign key constraint on 'element_id'")
 
-    def area_elements_composite_primary_key(self):
+    def test_area_elements_composite_primary_key(self):
         """Test that area_elements table has a composite primary key on park_id, area_number and element_id"""
         self.cursor.execute("""
             SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS

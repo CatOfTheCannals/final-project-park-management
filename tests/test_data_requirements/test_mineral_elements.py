@@ -18,13 +18,13 @@ class TestMineralElementsDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def mineral_elements_table_exists(self):
+    def test_mineral_elements_table_exists(self):
         """Test that the mineral_elements table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'mineral_elements';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Mineral elements table does not exist")
 
-    def mineral_elements_has_required_columns(self):
+    def test_mineral_elements_has_required_columns(self):
         """Test that mineral_elements table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM mineral_elements LIKE 'crystal_or_rock';")
         crystal_or_rock_column = self.cursor.fetchone()

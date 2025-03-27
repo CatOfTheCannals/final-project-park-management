@@ -18,13 +18,13 @@ class TestParkAreasDataRequirements(TestCase):
     def tearDownClass(cls):
         cls.connection.close()
 
-    def park_areas_table_exists(self):
+    def test_park_areas_table_exists(self):
         """Test that the park_areas table exists"""
         self.cursor.execute("SHOW TABLES LIKE 'park_areas';")
         result = self.cursor.fetchone()
         self.assertIsNotNone(result, "Park areas table does not exist")
 
-    def park_areas_has_required_columns(self):
+    def test_park_areas_has_required_columns(self):
         """Test that park_areas table has required columns"""
         self.cursor.execute("SHOW COLUMNS FROM park_areas LIKE 'name';")
         name_column = self.cursor.fetchone()

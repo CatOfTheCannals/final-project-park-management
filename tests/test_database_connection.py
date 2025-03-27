@@ -155,6 +155,13 @@ class TestDatabaseConnection(TestCase):
                     accommodation_id INT,
                     FOREIGN KEY (accommodation_id) REFERENCES accommodations(id)
                 );
+
+                CREATE TABLE IF NOT EXISTS excursions (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    day_of_week VARCHAR(20) NOT NULL,
+                    time TIME NOT NULL,
+                    type ENUM('foot', 'vehicle') NOT NULL
+                );
             ''')
         cls.connection.commit()
 
@@ -180,6 +187,7 @@ class TestDatabaseConnection(TestCase):
                 DROP TABLE IF EXISTS conservation_personnel;
                 DROP TABLE IF EXISTS accommodations;
                 DROP TABLE IF EXISTS visitors;
+                DROP TABLE IF EXISTS excursions;
                 DROP TABLE IF EXISTS personnel;
             ''')
         cls.connection.close()
@@ -280,3 +288,8 @@ class TestDatabaseConnection(TestCase):
             cursor.execute("SHOW TABLES LIKE 'visitors';")
             result = cursor.fetchone()
             self.assertEqual(result[0], 'visitors')
+
+            # Check excursions table exists
+            cursor.execute("SHOW TABLES LIKE 'excursions';")
+            result = cursor.fetchone()
+            self.assertEqual(result[0], 'excursions')

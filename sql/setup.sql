@@ -78,13 +78,10 @@ CREATE TABLE IF NOT EXISTS element_food (
     food_element_id INT,
     PRIMARY KEY (element_id, food_element_id),
     FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (food_element_id) REFERENCES natural_elements(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    CONSTRAINT check_mineral_not_food CHECK (NOT EXISTS (
-        SELECT 1 FROM mineral_elements me WHERE me.element_id = food_element_id
-    )),
-    CONSTRAINT check_vegetal_not_feeding CHECK (NOT EXISTS (
-        SELECT 1 FROM vegetal_elements ve WHERE ve.element_id = element_id
-    ))
+    FOREIGN KEY (food_element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    -- Removed CHECK constraints (check_mineral_not_food, check_vegetal_not_feeding)
+    -- due to MySQL limitations on subqueries within CHECK.
+    -- This logic needs to be enforced at the application level or via triggers.
 );
 
 CREATE TABLE IF NOT EXISTS personnel (

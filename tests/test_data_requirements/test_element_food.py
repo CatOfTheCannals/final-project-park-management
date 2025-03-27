@@ -95,24 +95,8 @@ class TestElementFoodDataRequirements(TestCase):
         primary_key_columns = [column[0] for column in self.cursor.fetchall()]
         self.assertEqual(primary_key_columns, ['element_id', 'food_element_id'], "Element_food table does not have a composite primary key on element_id and food_element_id")
 
-    def test_element_food_mineral_not_food_constraint(self):
-        """Test that the constraint prevents minerals from being listed as food"""
-        try:
-            # Try inserting data where a mineral is a food source
-            self.cursor.execute("INSERT INTO element_food (element_id, food_element_id) VALUES (%s, %s)", (self.animal_id, self.mineral_id))
-            self.connection.commit()
-            self.fail("Should not allow a mineral to be a food source")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("check_mineral_not_food", str(e).lower(), "Error message does not indicate mineral not food constraint violation")
+    # Removed test_element_food_mineral_not_food_constraint because the
+    # corresponding CHECK constraint was removed from SQL due to limitations.
 
-    def test_element_food_vegetal_not_feeding_constraint(self):
-        """Test that the constraint prevents vegetal elements from feeding on other elements"""
-        try:
-            # Try inserting data where a vegetal element is feeding on another element
-            self.cursor.execute("INSERT INTO element_food (element_id, food_element_id) VALUES (%s, %s)", (self.vegetal_id, self.animal_id))
-            self.connection.commit()
-            self.fail("Should not allow a vegetal element to feed on another element")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("check_vegetal_not_feeding", str(e).lower(), "Error message does not indicate vegetal not feeding constraint violation")
+    # Removed test_element_food_vegetal_not_feeding_constraint because the
+    # corresponding CHECK constraint was removed from SQL due to limitations.

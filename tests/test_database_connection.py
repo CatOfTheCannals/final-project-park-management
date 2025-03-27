@@ -123,8 +123,10 @@ class TestDatabaseConnection(TestCase):
 
                 CREATE TABLE IF NOT EXISTS research_projects (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    budget DECIMAL(15,2),
-                    duration VARCHAR(255)
+                    budget DECIMAL(15,2) NOT NULL,
+                    duration VARCHAR(255) NOT NULL,
+                    element_id INT NOT NULL,
+                    FOREIGN KEY (element_id) REFERENCES natural_elements(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS research_personnel (
@@ -138,7 +140,10 @@ class TestDatabaseConnection(TestCase):
                 CREATE TABLE IF NOT EXISTS conservation_personnel (
                     personnel_id INT PRIMARY KEY,
                     specialty VARCHAR(255),
-                    FOREIGN KEY (personnel_id) REFERENCES personnel(id)
+                    park_id INT NOT NULL,
+                    area_number INT NOT NULL,
+                    FOREIGN KEY (personnel_id) REFERENCES personnel(id),
+                    FOREIGN KEY (park_id, area_number) REFERENCES park_areas(park_id, area_number)
                 );
 
                 CREATE TABLE IF NOT EXISTS accommodations (

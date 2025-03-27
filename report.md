@@ -24,9 +24,9 @@ This project aims to develop a database system for managing information about na
 4. Visitors are directly associated with the park they are visiting (`visitors.park_id`), even though they stay in accommodations. This simplifies querying visitor counts per park.
 
 ## Design Decisions & Simplifications
-- **Surveillance Vehicle:** The `surveillance_personnel` table links a vehicle directly to the personnel member. The requirement nuance "siempre es el mismo en cada área que vigila" (always the same in each area they watch) is simplified; we assume one primary vehicle per surveillance staff member rather than tracking vehicle assignments per area vigilated.
-- **Research Element Link:** The relationship between research projects/personnel and the specific `natural_elements` being researched (Requirement 10.c.1) is not implemented in the current schema to maintain simplicity.
-- **Conservation Area Link:** The relationship between `conservation_personnel` and the specific `park_areas` they maintain (Requirement 10.d) is not implemented in the current schema for simplicity.
+- **Surveillance Vehicle:** The `surveillance_personnel` table links a vehicle directly to the personnel member. The requirement nuance "siempre es el mismo en cada área que vigila" (always the same in each area they watch) is simplified; we assume one primary vehicle per surveillance staff member rather than tracking vehicle assignments per area vigilated. This meets the requirement as stated, assuming a single vehicle per staff member across all their assigned areas.
+- **Research Element Link:** Implemented via `research_projects.element_id` foreign key, assuming a project focuses on one primary element.
+- **Conservation Area Link:** Implemented via `conservation_personnel.park_id` and `conservation_personnel.area_number` composite foreign key, assuming a conservation staff member is assigned to one specific area.
 
 ## Trade-offs
 - **Test Focus vs Implementation Speed:** By focusing on tests first, we ensure quality but may initially be slower than direct implementation.

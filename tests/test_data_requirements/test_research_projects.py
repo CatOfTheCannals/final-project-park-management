@@ -125,31 +125,7 @@ class TestResearchProjectsDataRequirements(unittest.TestCase):
 
 
     def test_research_projects_foreign_key_enforcement(self):
-            self.connection.commit()
-        self.connection.rollback()
-
-
-        # Try inserting data with NULL duration
-        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (12000.00, NULL, %s)", (self.element_id,))
-            inserted_id = self.cursor.lastrowid
-            self.created_project_ids.append(inserted_id)
-            self.connection.commit()
-        self.connection.rollback()
-
-
-        # Try inserting data with NULL element_id
-        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (13000.00, '18 months', NULL)")
-            inserted_id = self.cursor.lastrowid
-            self.created_project_ids.append(inserted_id)
-            self.connection.commit()
-        self.connection.rollback()
-
-
-    def test_research_projects_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in research_projects table"""
-        try:
         # Try inserting invalid data (non-existent element_id)
         with self.assertRaises(pymysql.err.IntegrityError):
             self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (14000.00, '6 months', 99999)")

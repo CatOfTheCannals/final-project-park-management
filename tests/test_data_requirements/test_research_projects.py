@@ -95,11 +95,36 @@ class TestResearchProjectsDataRequirements(unittest.TestCase):
     def test_research_projects_required_fields_not_null(self):
         """Test that required fields (budget, duration, element_id) cannot be null"""
         try:
-        # Try inserting data with NULL budget
-        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (NULL, '12 months', %s)", (self.element_id,))
-            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
-            self.created_project_ids.append(inserted_id)
+            # Try inserting data with NULL budget
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (NULL, '12 months', %s)", (self.element_id,))
+                inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+                self.created_project_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+
+
+            # Try inserting data with NULL duration
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (12000.00, NULL, %s)", (self.element_id,))
+                inserted_id = self.cursor.lastrowid
+                self.created_project_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+
+
+            # Try inserting data with NULL element_id
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (13000.00, '18 months', NULL)")
+                inserted_id = self.cursor.lastrowid
+                self.created_project_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+        except Exception as e: # Catch any unexpected error during the setup/test itself
+            self.fail(f"An unexpected error occurred in test_research_projects_required_fields_not_null: {e}")
+
+
+    def test_research_projects_foreign_key_enforcement(self):
             self.connection.commit()
         self.connection.rollback()
 

@@ -63,29 +63,27 @@ class TestPersonnelDataRequirements(unittest.TestCase):
 
     def test_personnel_dni_cuil_unique(self):
         """Test that DNI and CUIL are unique"""
-        try:
-            # Insert a personnel record
-            self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP123', 'TESTP20123', 'Test Name', 50000.00)")
-            inserted_id_1 = self.cursor.lastrowid
-            self.created_ids.append(inserted_id_1)
-            self.connection.commit()
+        # Insert a personnel record
+        self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP123', 'TESTP20123', 'Test Name', 50000.00)")
+        inserted_id_1 = self.cursor.lastrowid
+        self.created_ids.append(inserted_id_1)
+        self.connection.commit()
 
-            # Try inserting another personnel record with the same DNI
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP123', 'TESTP21123', 'Another Name', 60000.00)")
-                inserted_id_2 = self.cursor.lastrowid # If insert succeeds unexpectedly
-                self.created_ids.append(inserted_id_2)
-                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, address, phone_numbers, salary) VALUES ('TEST12345678', 'TEST21123456789', 'Another Test Name', 'Another Test Address', '987-654-3210', 60000.00)")
-                self.connection.commit()
-            self.connection.rollback()
+        # Try inserting another personnel record with the same DNI
+        with self.assertRaises(pymysql.err.IntegrityError):
+            self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP123', 'TESTP21123', 'Another Name', 60000.00)")
+            inserted_id_2 = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_ids.append(inserted_id_2)
+            self.connection.commit() # This commit won't be reached if error is raised
+        self.connection.rollback() # Rollback after expected error or unexpected success
 
-            # Try inserting another personnel record with the same CUIL
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP876', 'TESTP20123', 'Yet Another Name', 70000.00)")
-                inserted_id_3 = self.cursor.lastrowid # If insert succeeds unexpectedly
-                self.created_ids.append(inserted_id_3)
-                self.connection.commit()
-            self.connection.rollback()
+        # Try inserting another personnel record with the same CUIL
+        with self.assertRaises(pymysql.err.IntegrityError):
+            self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP876', 'TESTP20123', 'Yet Another Name', 70000.00)")
+            inserted_id_3 = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_ids.append(inserted_id_3)
+            self.connection.commit() # This commit won't be reached if error is raised
+        self.connection.rollback() # Rollback after expected error or unexpected success
 
 
     def test_personnel_data_insertion(self):

@@ -142,8 +142,10 @@ class TestParkProvincesDataRequirements(TestCase):
             self.connection.commit()
 
             # Calculate the sum of extension_in_province for the park
-            self.cursor.execute("SELECT SUM(extension_in_province) FROM park_provinces WHERE park_id = %s", (self.park_id,))
-            sum_extension_in_province = self.cursor.fetchone()[0]
+            self.cursor.execute("SELECT SUM(extension_in_province) as total_prov_extension FROM park_provinces WHERE park_id = %s", (self.park_id,))
+            result = self.cursor.fetchone()
+            self.assertIsNotNone(result, "SUM query returned no result")
+            sum_extension_in_province = result['total_prov_extension'] # Access by alias
 
             # Get the total_area of the park
             self.cursor.execute("SELECT total_area FROM parks WHERE id = %s", (self.park_id,))

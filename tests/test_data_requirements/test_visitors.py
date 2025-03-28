@@ -77,10 +77,24 @@ class TestVisitorsDataRequirements(unittest.TestCase):
     def test_visitors_dni_unique(self):
         """Test that DNI is unique"""
         try:
-        # Insert a visitor record
-        self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV123', 'Test Name', %s, %s)", (self.accommodation_id, self.park_id))
-        inserted_id_1 = self.cursor.lastrowid
-        self.created_visitor_ids.append(inserted_id_1)
+            # Insert a visitor record
+            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV123', 'Test Name', %s, %s)", (self.accommodation_id, self.park_id))
+            inserted_id_1 = self.cursor.lastrowid
+            self.created_visitor_ids.append(inserted_id_1)
+            self.connection.commit()
+
+            # Try inserting another visitor record with the same DNI
+            with self.assertRaises(pymysql.err.IntegrityError):
+                self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV123', 'Another Name', %s, %s)", (self.accommodation_id, self.park_id))
+                inserted_id_2 = self.cursor.lastrowid # If insert succeeds unexpectedly
+                self.created_visitor_ids.append(inserted_id_2)
+                self.connection.commit()
+            self.connection.rollback()
+        except Exception as e: # Catch any unexpected error during the setup/test itself
+            self.fail(f"An unexpected error occurred in test_visitors_dni_unique: {e}")
+
+
+    def test_visitors_data_insertion(self):
         self.connection.commit()
 
         # Try inserting another visitor record with the same DNI

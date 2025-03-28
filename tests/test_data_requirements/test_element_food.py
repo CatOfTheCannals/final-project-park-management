@@ -94,10 +94,13 @@ class TestElementFoodDataRequirements(TestCase):
             SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
             WHERE TABLE_NAME = 'element_food' AND CONSTRAINT_NAME = %s
             ORDER BY ORDINAL_POSITION;
-        """, (primary_key[0],))
-        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
-        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
-        self.assertEqual(primary_key_columns, ['element_id', 'food_element_id'], "Element_food table does not have a composite primary key on element_id and food_element_id")
+        """, (primary_key['CONSTRAINT_NAME'],)) # Access by key for DictCursor
+        primary_key_columns = [column['COLUMN_NAME'] for column in self.cursor.fetchall()] # Access by key
+        # Order might vary, check presence and count
+        self.assertIn('element_id', primary_key_columns, "PK missing element_id")
+        self.assertIn('food_element_id', primary_key_columns, "PK missing food_element_id")
+        self.assertEqual(len(primary_key_columns), 2, "PK should have exactly 2 columns")
+
 
     def test_element_food_mineral_not_food_constraint(self):
         """Test that the trigger prevents minerals from being listed as food"""

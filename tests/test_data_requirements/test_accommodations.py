@@ -64,13 +64,11 @@ class TestAccommodationsDataRequirements(unittest.TestCase):
 
     def test_accommodations_required_fields_not_null(self):
         """Test that required fields (capacity) cannot be null"""
-        try:
-            # Try inserting data with NULL capacity
-            # Try inserting data with NULL capacity
-            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)): # Catch both potential errors
-                self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (NULL, 'TEST_A_Category_Null')")
-                # If insert succeeds unexpectedly, track ID for cleanup
-                inserted_id = self.cursor.lastrowid
-                self.created_ids.append(inserted_id)
-                self.connection.commit()
-            self.connection.rollback() # Rollback after expected error
+        # Try inserting data with NULL capacity
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)): # Catch both potential errors
+            self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (NULL, 'TEST_A_Category_Null')")
+            # If insert succeeds unexpectedly, track ID for cleanup
+            inserted_id = self.cursor.lastrowid
+            self.created_ids.append(inserted_id)
+            self.connection.commit()
+        self.connection.rollback() # Rollback after expected error

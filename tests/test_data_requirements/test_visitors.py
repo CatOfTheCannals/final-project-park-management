@@ -176,17 +176,17 @@ class TestVisitorsDataRequirements(unittest.TestCase):
             self.connection.rollback()
 
         # Try inserting invalid data (non-existent park_id)
-        with self.assertRaises(pymysql.err.IntegrityError):
-            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV666', 'Invalid Park Name', %s, 99999)", (self.accommodation_id,))
-            inserted_id = self.cursor.lastrowid
-            self.created_visitor_ids.append(inserted_id)
-        self.connection.commit()
+            with self.assertRaises(pymysql.err.IntegrityError):
+                self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV666', 'Invalid Park Name', %s, 99999)", (self.accommodation_id,))
+                inserted_id = self.cursor.lastrowid
+                self.created_visitor_ids.append(inserted_id)
+            self.connection.commit()
 
-        # Verify that the data was inserted
-        self.cursor.execute("SELECT * FROM visitors WHERE id = %s", (inserted_id,))
-        result = self.cursor.fetchone()
-        self.assertIsNotNone(result, "Data was not inserted into visitors table")
-        self.assertEqual(result['DNI'], 'TESTV987')
+            # Verify that the data was inserted
+            self.cursor.execute("SELECT * FROM visitors WHERE id = %s", (inserted_id,))
+            result = self.cursor.fetchone()
+            self.assertIsNotNone(result, "Data was not inserted into visitors table")
+            self.assertEqual(result['DNI'], 'TESTV987')
 
         except Exception as e:
             self.connection.rollback()

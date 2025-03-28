@@ -1,108 +1,132 @@
-import unittest
+import unittest # Added missing import
 from unittest import TestCase
 import pymysql
 
 class TestFunctionalRequirements(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Initialize database connection
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
-            user='root', 
+            user='root',
             password='',
-            db='park_management'
+            db='park_management',
+            cursorclass=pymysql.cursors.DictCursor # Use DictCursor
         )
-        cls.cursor = cls.connection.cursor(pymysql.cursors.DictCursor) # Use DictCursor
+        self.cursor = self.connection.cursor()
 
-        # Insert test data - Provinces
-        cls.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Buenos Aires', 'OPDS') ON DUPLICATE KEY UPDATE name=name;")
-        cls.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Cordoba', 'Secretaria de Ambiente') ON DUPLICATE KEY UPDATE name=name;")
-        cls.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Santa Fe', 'Ministerio de Ambiente') ON DUPLICATE KEY UPDATE name=name;")
-        cls.connection.commit()
-        cls.province_ba_id = cls.cursor.execute("SELECT id FROM provinces WHERE name = 'Buenos Aires';"); cls.province_ba_id = cls.cursor.fetchone()['id']
-        cls.province_co_id = cls.cursor.execute("SELECT id FROM provinces WHERE name = 'Cordoba';"); cls.province_co_id = cls.cursor.fetchone()['id']
-        cls.province_sf_id = cls.cursor.execute("SELECT id FROM provinces WHERE name = 'Santa Fe';"); cls.province_sf_id = cls.cursor.fetchone()['id']
+        # --- Insert test data required for functional tests ---
+        # Keep track of created IDs for tearDown
+        self.province_ids = []
+        self.park_ids = []
+        self.element_ids = []
+        self.accom_ids = []
+        self.visitor_ids = []
+
+        try:
+            # Provinces
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Buenos Aires', 'OPDS');")
+            self.province_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Cordoba', 'Secretaria de Ambiente');")
+            self.province_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Santa Fe', 'Ministerio de Ambiente');")
+            self.province_ids.append(self.cursor.lastrowid)
+            self.province_ba_id, self.province_co_id, self.province_sf_id = self.province_ids
+
+            # Parks
+            self.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque A', '2020-01-01', 'parqueA@example.com', 'A', 1000);")
+            self.park_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque B', '2021-02-01', 'parqueB@example.com', 'B', 2000);")
+            self.park_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque C', '2022-03-01', 'parqueC@example.com', 'C', 3000);") # Shared park
+            self.park_ids.append(self.cursor.lastrowid)
+            self.park_a_id, self.park_b_id, self.park_c_id = self.park_ids
+
+            # Park Provinces
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1000);", (self.park_a_id, self.province_ba_id))
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 2000);", (self.park_b_id, self.province_co_id))
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1500);", (self.park_c_id, self.province_co_id)) # Shared C
+            self.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1500);", (self.park_c_id, self.province_sf_id)) # Shared C
+
+            # Park Areas
+            self.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area A1', 500);", (self.park_a_id,))
+            self.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 2, 'Area A2', 500);", (self.park_a_id,))
+            self.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area B1', 2000);", (self.park_b_id,))
+            self.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area C1', 1500);", (self.park_c_id,))
+            self.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 2, 'Area C2', 1500);", (self.park_c_id,))
+
+            # Natural Elements (Species)
+            self.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Plantus communis', 'Common Plant');")
+            self.element_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Plantus rarus', 'Rare Plant');")
+            self.element_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Animalia familiaris', 'Familiar Animal');")
+            self.element_ids.append(self.cursor.lastrowid)
+            self.plant_common_id, self.plant_rare_id, self.animal_id = self.element_ids
+
+            # Vegetal Elements
+            self.cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (%s, 'Spring');", (self.plant_common_id,))
+            self.cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (%s, 'Summer');", (self.plant_rare_id,))
+
+            # Area Elements
+            self.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 100);", (self.park_a_id, self.plant_common_id))
+            self.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 50);", (self.park_b_id, self.plant_common_id))
+            self.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 200);", (self.park_c_id, self.plant_common_id))
+            self.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 2, %s, 10);", (self.park_a_id, self.plant_rare_id))
+            self.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 2, %s, 20);", (self.park_c_id, self.animal_id))
+
+            # Accommodations
+            self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (2, 'Cabin A');")
+            self.accom_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'Lodge B');")
+            self.accom_ids.append(self.cursor.lastrowid)
+            self.accom_a_id, self.accom_b_id = self.accom_ids
+
+            # Visitors
+            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('VISITOR1', 'Visitor One', %s, %s);", (self.accom_a_id, self.park_a_id))
+            self.visitor_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('VISITOR2', 'Visitor Two', %s, %s);", (self.accom_b_id, self.park_b_id))
+            self.visitor_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('VISITOR3', 'Visitor Three', %s, %s);", (self.accom_b_id, self.park_b_id))
+            self.visitor_ids.append(self.cursor.lastrowid)
+            self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('VISITOR4', 'Visitor Four', %s, %s);", (self.accom_a_id, self.park_c_id))
+            self.visitor_ids.append(self.cursor.lastrowid)
+
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            # Ensure connection is closed even if setup fails
+            self.connection.close()
+            raise # Re-raise the exception to fail the test setup
 
 
-        # Insert test data - Parks
-        cls.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque A', '2020-01-01', 'parqueA@example.com', 'A', 1000) ON DUPLICATE KEY UPDATE name=name;")
-        cls.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque B', '2021-02-01', 'parqueB@example.com', 'B', 2000) ON DUPLICATE KEY UPDATE name=name;")
-        cls.cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Parque C', '2022-03-01', 'parqueC@example.com', 'C', 3000) ON DUPLICATE KEY UPDATE name=name;") # Shared park
-        cls.connection.commit()
-        cls.park_a_id = cls.cursor.execute("SELECT id FROM parks WHERE code = 'A';"); cls.park_a_id = cls.cursor.fetchone()['id']
-        cls.park_b_id = cls.cursor.execute("SELECT id FROM parks WHERE code = 'B';"); cls.park_b_id = cls.cursor.fetchone()['id']
-        cls.park_c_id = cls.cursor.execute("SELECT id FROM parks WHERE code = 'C';"); cls.park_c_id = cls.cursor.fetchone()['id']
+    def tearDown(self):
+        # Clean up all test data created in setUp - use DELETE with IN clause for efficiency
+        with self.connection.cursor() as cursor:
+            if self.visitor_ids:
+                ids_format = ','.join(['%s'] * len(self.visitor_ids))
+                cursor.execute(f"DELETE FROM visitors WHERE id IN ({ids_format})", tuple(self.visitor_ids))
+            if self.accom_ids:
+                ids_format = ','.join(['%s'] * len(self.accom_ids))
+                cursor.execute(f"DELETE FROM accommodations WHERE id IN ({ids_format})", tuple(self.accom_ids))
+            if self.element_ids:
+                ids_format = ','.join(['%s'] * len(self.element_ids))
+                cursor.execute(f"DELETE FROM area_elements WHERE element_id IN ({ids_format})", tuple(self.element_ids))
+                cursor.execute(f"DELETE FROM vegetal_elements WHERE element_id IN ({ids_format})", tuple(self.element_ids))
+                # Add deletes for animal/mineral if they were added
+                cursor.execute(f"DELETE FROM natural_elements WHERE id IN ({ids_format})", tuple(self.element_ids))
+            if self.park_ids:
+                ids_format = ','.join(['%s'] * len(self.park_ids))
+                cursor.execute(f"DELETE FROM park_areas WHERE park_id IN ({ids_format})", tuple(self.park_ids))
+                cursor.execute(f"DELETE FROM park_provinces WHERE park_id IN ({ids_format})", tuple(self.park_ids))
+                cursor.execute(f"DELETE FROM parks WHERE id IN ({ids_format})", tuple(self.park_ids))
+            if self.province_ids:
+                ids_format = ','.join(['%s'] * len(self.province_ids))
+                cursor.execute(f"DELETE FROM provinces WHERE id IN ({ids_format})", tuple(self.province_ids))
+            # Clear email log specific to trigger test if needed
+            cursor.execute("DELETE FROM email_log WHERE element_scientific_name = 'Plantus communis';")
 
-        # Insert test data - Park Provinces (Linking parks to provinces)
-        cls.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1000) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_a_id, cls.province_ba_id))
-        cls.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 2000) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_b_id, cls.province_co_id))
-        cls.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1500) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_c_id, cls.province_co_id)) # Shared C
-        cls.cursor.execute("INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES (%s, %s, 1500) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_c_id, cls.province_sf_id)) # Shared C
-        cls.connection.commit()
-
-        # Insert test data - Park Areas
-        cls.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area A1', 500) ON DUPLICATE KEY UPDATE name=name;", (cls.park_a_id,))
-        cls.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 2, 'Area A2', 500) ON DUPLICATE KEY UPDATE name=name;", (cls.park_a_id,))
-        cls.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area B1', 2000) ON DUPLICATE KEY UPDATE name=name;", (cls.park_b_id,))
-        cls.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Area C1', 1500) ON DUPLICATE KEY UPDATE name=name;", (cls.park_c_id,)) # Area in shared park C
-        cls.cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 2, 'Area C2', 1500) ON DUPLICATE KEY UPDATE name=name;", (cls.park_c_id,)) # Area in shared park C
-        cls.connection.commit()
-
-        # Insert test data - Natural Elements (Species)
-        cls.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Plantus communis', 'Common Plant') ON DUPLICATE KEY UPDATE scientific_name=scientific_name;")
-        cls.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Plantus rarus', 'Rare Plant') ON DUPLICATE KEY UPDATE scientific_name=scientific_name;")
-        cls.cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Animalia familiaris', 'Familiar Animal') ON DUPLICATE KEY UPDATE scientific_name=scientific_name;")
-        cls.connection.commit()
-        cls.plant_common_id = cls.cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'Plantus communis';"); cls.plant_common_id = cls.cursor.fetchone()['id']
-        cls.plant_rare_id = cls.cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'Plantus rarus';"); cls.plant_rare_id = cls.cursor.fetchone()['id']
-        cls.animal_id = cls.cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'Animalia familiaris';"); cls.animal_id = cls.cursor.fetchone()['id']
-
-        # Insert test data - Vegetal Elements (Link to Natural Elements)
-        cls.cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (%s, 'Spring') ON DUPLICATE KEY UPDATE element_id=element_id;", (cls.plant_common_id,))
-        cls.cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (%s, 'Summer') ON DUPLICATE KEY UPDATE element_id=element_id;", (cls.plant_rare_id,))
-        cls.connection.commit()
-
-        # Insert test data - Area Elements (Linking species to areas)
-        # Common plant in A1, B1, C1 (3 parks)
-        cls.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 100) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_a_id, cls.plant_common_id))
-        cls.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 50) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_b_id, cls.plant_common_id))
-        cls.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 1, %s, 200) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_c_id, cls.plant_common_id))
-        # Rare plant only in A2 (1 park)
-        cls.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 2, %s, 10) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_a_id, cls.plant_rare_id))
-        # Animal in C2 (1 park)
-        cls.cursor.execute("INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES (%s, 2, %s, 20) ON DUPLICATE KEY UPDATE park_id=park_id;", (cls.park_c_id, cls.animal_id))
-        cls.connection.commit()
-
-        # Insert test data - Accommodations
-        cls.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (2, 'Cabin A') ON DUPLICATE KEY UPDATE category=category;")
-        cls.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'Lodge B') ON DUPLICATE KEY UPDATE category=category;")
-        cls.connection.commit()
-        cls.accom_a_id = cls.cursor.execute("SELECT id FROM accommodations WHERE category = 'Cabin A';"); cls.accom_a_id = cls.cursor.fetchone()['id']
-        cls.accom_b_id = cls.cursor.execute("SELECT id FROM accommodations WHERE category = 'Lodge B';"); cls.accom_b_id = cls.cursor.fetchone()['id']
-
-        # Insert test data - Visitors
-        cls.cursor.execute("INSERT INTO visitors (DNI, name, address, profession, accommodation_id, park_id) VALUES ('VISITOR1', 'Visitor One', 'Addr 1', 'Prof 1', %s, %s) ON DUPLICATE KEY UPDATE DNI=DNI;", (cls.accom_a_id, cls.park_a_id)) # Visitor in Park A
-        cls.cursor.execute("INSERT INTO visitors (DNI, name, address, profession, accommodation_id, park_id) VALUES ('VISITOR2', 'Visitor Two', 'Addr 2', 'Prof 2', %s, %s) ON DUPLICATE KEY UPDATE DNI=DNI;", (cls.accom_b_id, cls.park_b_id)) # Visitor in Park B
-        cls.cursor.execute("INSERT INTO visitors (DNI, name, address, profession, accommodation_id, park_id) VALUES ('VISITOR3', 'Visitor Three', 'Addr 3', 'Prof 3', %s, %s) ON DUPLICATE KEY UPDATE DNI=DNI;", (cls.accom_b_id, cls.park_b_id)) # Visitor in Park B
-        cls.cursor.execute("INSERT INTO visitors (DNI, name, address, profession, accommodation_id, park_id) VALUES ('VISITOR4', 'Visitor Four', 'Addr 4', 'Prof 4', %s, %s) ON DUPLICATE KEY UPDATE DNI=DNI;", (cls.accom_a_id, cls.park_c_id)) # Visitor in Park C (using accom A for test)
-        cls.connection.commit()
-
-
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data and close connection - use DELETE and be specific
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM visitors WHERE DNI LIKE 'VISITOR%';")
-            cursor.execute("DELETE FROM accommodations WHERE category IN ('Cabin A', 'Lodge B');")
-            cursor.execute("DELETE FROM area_elements WHERE element_id IN (%s, %s, %s);", (cls.plant_common_id, cls.plant_rare_id, cls.animal_id))
-            cursor.execute("DELETE FROM vegetal_elements WHERE element_id IN (%s, %s);", (cls.plant_common_id, cls.plant_rare_id))
-            cursor.execute("DELETE FROM natural_elements WHERE id IN (%s, %s, %s);", (cls.plant_common_id, cls.plant_rare_id, cls.animal_id))
-            cursor.execute("DELETE FROM park_areas WHERE park_id IN (%s, %s, %s);", (cls.park_a_id, cls.park_b_id, cls.park_c_id))
-            cursor.execute("DELETE FROM park_provinces WHERE park_id IN (%s, %s, %s);", (cls.park_a_id, cls.park_b_id, cls.park_c_id))
-            cursor.execute("DELETE FROM parks WHERE id IN (%s, %s, %s);", (cls.park_a_id, cls.park_b_id, cls.park_c_id))
-            cursor.execute("DELETE FROM provinces WHERE id IN (%s, %s, %s);", (cls.province_ba_id, cls.province_co_id, cls.province_sf_id))
-        cls.connection.commit()
-        cls.connection.close()
+        self.connection.commit()
+        self.connection.close()
 
     def test_01_determine_province_with_most_parks(self):
         """Test Func Req 1: Determine the province with the most natural parks."""

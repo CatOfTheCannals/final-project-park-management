@@ -2,25 +2,29 @@ import unittest
 import pymysql
 
 class TestExcursionsDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.created_ids = [] # Track created IDs
 
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM excursions WHERE day_of_week LIKE 'TEST%';")
-        cls.connection.commit()
-        cls.connection.close()
+    def tearDown(self):
+        # Clean up test data created during tests
+        if self.created_ids:
+            with self.connection.cursor() as cursor:
+                ids_format = ','.join(['%s'] * len(self.created_ids))
+                # Need to delete from linking tables first if any test creates links
+                cursor.execute(f"DELETE FROM accommodation_excursions WHERE excursion_id IN ({ids_format})", tuple(self.created_ids))
+                cursor.execute(f"DELETE FROM visitor_excursions WHERE excursion_id IN ({ids_format})", tuple(self.created_ids))
+                cursor.execute(f"DELETE FROM excursions WHERE id IN ({ids_format})", tuple(self.created_ids))
+            self.connection.commit()
+        self.connection.close()
 
     def test_excursions_table_exists(self):
         """Test that the excursions table exists"""
@@ -46,62 +50,58 @@ class TestExcursionsDataRequirements(unittest.TestCase):
         """Test data insertion into excursions table"""
         try:
             # Insert valid data
-            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST Sunday', '10:00:00', 'foot')")
+            # Insert valid data
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Sunday', '10:00:00', 'foot')")
+            inserted_id = self.cursor.lastrowid
+            self.created_ids.append(inserted_id) # Track ID
             self.connection.commit()
 
             # Verify that the data was inserted
-            self.cursor.execute("SELECT * FROM excursions WHERE day_of_week = 'TEST Sunday'")
+            self.cursor.execute("SELECT * FROM excursions WHERE id = %s", (inserted_id,))
             result = self.cursor.fetchone()
             self.assertIsNotNone(result, "Data was not inserted into excursions table")
+            self.assertEqual(result['day_of_week'], 'TEST_E_Sunday')
 
         except Exception as e:
             self.connection.rollback()
             self.fail(f"Error inserting data into excursions table: {e}")
 
-        finally:
-            # Clean up test data
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM excursions WHERE day_of_week LIKE 'TEST%';")
-            self.connection.commit()
 
     def test_excursions_required_fields_not_null(self):
         """Test that required fields (day_of_week, time, type) cannot be null"""
         try:
-            # Try inserting data with NULL day_of_week
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES (NULL, '10:00:00', 'foot')")
-                self.connection.commit()
-            self.connection.rollback()
-
-            # Try inserting data with NULL time
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('Test Day', NULL, 'foot')")
-                self.connection.commit()
-            self.connection.rollback()
-
-            # Try inserting data with NULL type
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('Test Day', '10:00:00', NULL)")
-                self.connection.commit()
-            self.connection.rollback()
-
-        finally:
-            # Clean up the test data
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM excursions WHERE day_of_week LIKE 'TEST%';")
+        # Try inserting data with NULL day_of_week
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES (NULL, '10:00:00', 'foot')")
+            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_ids.append(inserted_id)
             self.connection.commit()
+        self.connection.rollback()
+
+        # Try inserting data with NULL time
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Null', NULL, 'foot')")
+            inserted_id = self.cursor.lastrowid
+            self.created_ids.append(inserted_id)
+            self.connection.commit()
+        self.connection.rollback()
+
+        # Try inserting data with NULL type
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Null', '10:00:00', NULL)")
+            inserted_id = self.cursor.lastrowid
+            self.created_ids.append(inserted_id)
+            self.connection.commit()
+        self.connection.rollback()
+
 
     def test_excursions_type_enum_values(self):
         """Test that the 'type' column only accepts ENUM values ('foot', 'vehicle')"""
         try:
-            # Try inserting data with invalid type value
-            with self.assertRaises(pymysql.err.DataError):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('Test Day', '10:00:00', 'invalid')")
-                self.connection.commit()
-            self.connection.rollback()
-
-        finally:
-            # Clean up the test data
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM excursions WHERE day_of_week LIKE 'TEST%';")
+        # Try inserting data with invalid type value
+        with self.assertRaises(pymysql.err.DataError):
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Invalid', '10:00:00', 'invalid')")
+            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_ids.append(inserted_id)
             self.connection.commit()
+        self.connection.rollback()

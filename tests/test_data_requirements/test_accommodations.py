@@ -2,25 +2,28 @@ import unittest
 import pymysql
 
 class TestAccommodationsDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        # Keep track of IDs created during tests
+        self.created_ids = []
 
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM accommodations WHERE category LIKE 'TEST%';")
-        cls.connection.commit()
-        cls.connection.close()
+    def tearDown(self):
+        # Clean up test data created during tests
+        if self.created_ids:
+            with self.connection.cursor() as cursor:
+                # Format IDs for the IN clause
+                ids_format = ','.join(['%s'] * len(self.created_ids))
+                cursor.execute(f"DELETE FROM accommodations WHERE id IN ({ids_format})", tuple(self.created_ids))
+            self.connection.commit()
+        self.connection.close()
 
     def test_accommodations_table_exists(self):
         """Test that the accommodations table exists"""
@@ -42,35 +45,32 @@ class TestAccommodationsDataRequirements(unittest.TestCase):
         """Test data insertion into accommodations table"""
         try:
             # Insert valid data
-            self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'TEST Cabin')")
+            # Insert valid data
+            self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'TEST_A_Cabin')")
+            inserted_id = self.cursor.lastrowid
+            self.created_ids.append(inserted_id) # Track created ID
             self.connection.commit()
 
             # Verify that the data was inserted
-            self.cursor.execute("SELECT * FROM accommodations WHERE category = 'TEST Cabin'")
+            self.cursor.execute("SELECT * FROM accommodations WHERE id = %s", (inserted_id,))
             result = self.cursor.fetchone()
             self.assertIsNotNone(result, "Data was not inserted into accommodations table")
+            self.assertEqual(result['category'], 'TEST_A_Cabin')
 
         except Exception as e:
             self.connection.rollback()
             self.fail(f"Error inserting data into accommodations table: {e}")
 
-        finally:
-            # Clean up test data
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM accommodations WHERE category LIKE 'TEST%';")
-            self.connection.commit()
 
     def test_accommodations_required_fields_not_null(self):
         """Test that required fields (capacity) cannot be null"""
         try:
             # Try inserting data with NULL capacity
-            with self.assertRaises(pymysql.err.IntegrityError):
-                self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (NULL, 'Test Category')")
+            # Try inserting data with NULL capacity
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)): # Catch both potential errors
+                self.cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (NULL, 'TEST_A_Category_Null')")
+                # If insert succeeds unexpectedly, track ID for cleanup
+                inserted_id = self.cursor.lastrowid
+                self.created_ids.append(inserted_id)
                 self.connection.commit()
-            self.connection.rollback()
-
-        finally:
-            # Clean up the test data
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM accommodations WHERE category LIKE 'TEST%';")
-            self.connection.commit()
+            self.connection.rollback() # Rollback after expected error

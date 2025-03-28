@@ -2,56 +2,45 @@ import unittest
 import pymysql
 
 class TestVisitorExcursionsDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.park_id = None # Initialize
+        self.visitor_id = None # Initialize
+        self.excursion_id = None # Initialize
 
-        # Insert a test park record (needed for visitor)
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Test Park VE', '2024-01-01', 'testve@example.com', 'VE', 100.00) ON DUPLICATE KEY UPDATE code=code;")
-            cls.connection.commit()
-            cursor.execute("SELECT id FROM parks WHERE code = 'VE'")
-            cls.park_id = cursor.fetchone()['id']
+        # Insert dependencies: park, visitor, excursion
+        with self.connection.cursor() as cursor:
+            # Park
+            cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Test Park VE', '2024-01-01', 'testve@example.com', 'VE', 100.00)")
+            self.park_id = cursor.lastrowid
 
-        # Insert a test visitor record
-        with cls.connection.cursor() as cursor:
-            # Need accommodation first if visitor FK requires it (it's SET NULL, so optional)
-            # cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (2, 'VE Cabin') ON DUPLICATE KEY UPDATE category=category;")
-            # cls.connection.commit()
-            # cursor.execute("SELECT id FROM accommodations WHERE category = 'VE Cabin'")
-            # cls.accommodation_id = cursor.fetchone()['id']
+            # Visitor
+            cursor.execute("INSERT INTO visitors (DNI, name, park_id) VALUES ('TESTVE123', 'Test Visitor VE', %s)", (self.park_id,))
+            self.visitor_id = cursor.lastrowid
 
-            cursor.execute("INSERT INTO visitors (DNI, name, park_id) VALUES ('TESTVE123', 'Test Visitor VE', %s) ON DUPLICATE KEY UPDATE DNI=DNI;", (cls.park_id,))
-            cls.connection.commit()
-            cursor.execute("SELECT id FROM visitors WHERE DNI = 'TESTVE123'")
-            cls.visitor_id = cursor.fetchone()['id']
+            # Excursion
+            cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_VE_Monday', '09:00:00', 'vehicle')")
+            self.excursion_id = cursor.lastrowid
+            self.connection.commit()
 
-        # Insert a test excursion record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST Monday VE', '09:00:00', 'vehicle') ON DUPLICATE KEY UPDATE day_of_week=day_of_week;")
-            cls.connection.commit()
-            cursor.execute("SELECT id FROM excursions WHERE day_of_week = 'TEST Monday VE'")
-            cls.excursion_id = cursor.fetchone()['id']
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         # Clean up test data - order matters
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM visitor_excursions WHERE visitor_id = %s AND excursion_id = %s", (cls.visitor_id, cls.excursion_id))
-            cursor.execute("DELETE FROM visitors WHERE id = %s", (cls.visitor_id,))
-            # cursor.execute("DELETE FROM accommodations WHERE category = 'VE Cabin';") # If accommodation was created
-            cursor.execute("DELETE FROM excursions WHERE id = %s", (cls.excursion_id,))
-            cursor.execute("DELETE FROM parks WHERE id = %s", (cls.park_id,))
-        cls.connection.commit()
-        cls.connection.close()
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM visitor_excursions WHERE visitor_id = %s AND excursion_id = %s", (self.visitor_id, self.excursion_id))
+            cursor.execute("DELETE FROM visitors WHERE id = %s", (self.visitor_id,))
+            cursor.execute("DELETE FROM excursions WHERE id = %s", (self.excursion_id,))
+            cursor.execute("DELETE FROM parks WHERE id = %s", (self.park_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_visitor_excursions_table_exists(self):
         """Test that the visitor_excursions table exists"""
@@ -100,8 +89,8 @@ class TestVisitorExcursionsDataRequirements(unittest.TestCase):
             SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
             WHERE TABLE_NAME = 'visitor_excursions' AND CONSTRAINT_NAME = %s
             ORDER BY ORDINAL_POSITION;
-        """, (primary_key[0],))
-        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
+        """, (primary_key['CONSTRAINT_NAME'],)) # Access by key for DictCursor
+        primary_key_columns = [column['COLUMN_NAME'] for column in self.cursor.fetchall()] # Access by key
         # Order might vary depending on creation order, check both columns exist
         self.assertIn('visitor_id', primary_key_columns, "PK missing visitor_id")
         self.assertIn('excursion_id', primary_key_columns, "PK missing excursion_id")

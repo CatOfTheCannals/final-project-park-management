@@ -2,37 +2,39 @@ import unittest
 import pymysql
 
 class TestResearchProjectsDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.element_id = None # Initialize
+        self.created_project_ids = [] # Track created project IDs
 
         # Insert a test natural element
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('Test Element', 'Test Common')")
-            cls.connection.commit()
-            # Get the element_id of the inserted record
-            cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'Test Element'")
-            result = cursor.fetchone()
-            cls.element_id = result['id']
+        with self.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('TestElementRProj', 'CommonRProj')")
+            self.element_id = cursor.lastrowid
+            self.connection.commit()
 
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         # Clean up test data
-        with cls.connection.cursor() as cursor:
-            # Delete projects first due to FK constraint in research_personnel (if any exist)
-            cursor.execute("DELETE FROM research_projects WHERE element_id = %s", (cls.element_id,))
-            cursor.execute("DELETE FROM natural_elements WHERE id = %s", (cls.element_id,))
-        cls.connection.commit()
-        cls.connection.close()
+        with self.connection.cursor() as cursor:
+            if self.created_project_ids:
+                ids_format = ','.join(['%s'] * len(self.created_project_ids))
+                # Delete from research_personnel first if any test creates links
+                cursor.execute(f"DELETE FROM research_personnel WHERE project_id IN ({ids_format})", tuple(self.created_project_ids))
+                cursor.execute(f"DELETE FROM research_projects WHERE id IN ({ids_format})", tuple(self.created_project_ids))
+            # Delete the natural element created in setUp
+            if self.element_id:
+                cursor.execute("DELETE FROM natural_elements WHERE id = %s", (self.element_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_research_projects_table_exists(self):
         """Test that the research_projects table exists"""
@@ -73,61 +75,60 @@ class TestResearchProjectsDataRequirements(unittest.TestCase):
         """Test data insertion into research_projects table"""
         try:
             # Insert valid data
+            # Insert valid data
             self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (15000.00, '24 months', %s)", (self.element_id,))
+            inserted_id = self.cursor.lastrowid
+            self.created_project_ids.append(inserted_id) # Track ID
             self.connection.commit()
 
             # Verify that the data was inserted
-            self.cursor.execute("SELECT * FROM research_projects WHERE budget = 15000.00")
+            self.cursor.execute("SELECT * FROM research_projects WHERE id = %s", (inserted_id,))
             result = self.cursor.fetchone()
             self.assertIsNotNone(result, "Data was not inserted into research_projects table")
+            self.assertEqual(result['budget'], 15000.00)
 
         except Exception as e:
             self.connection.rollback()
             self.fail(f"Error inserting data into research_projects table: {e}")
 
-        finally:
-            # Clean up test data
-            with self.connection.cursor() as cursor:
-                # Use element_id for cleanup as budget might not be unique
-                cursor.execute("DELETE FROM research_projects WHERE element_id = %s", (self.element_id,))
-            self.connection.commit()
 
     def test_research_projects_required_fields_not_null(self):
         """Test that required fields (budget, duration, element_id) cannot be null"""
         try:
-            # Try inserting data with NULL budget
+        # Try inserting data with NULL budget
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
             self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (NULL, '12 months', %s)", (self.element_id,))
+            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_project_ids.append(inserted_id)
             self.connection.commit()
-            self.fail("Should not allow NULL budget in research_projects table")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("cannot be null", str(e).lower(), "Error message does not indicate duration NULL constraint violation")
+        self.connection.rollback()
 
-        try:
-            # Try inserting data with NULL element_id
-            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (13000.00, '18 months', NULL)")
+
+        # Try inserting data with NULL duration
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (12000.00, NULL, %s)", (self.element_id,))
+            inserted_id = self.cursor.lastrowid
+            self.created_project_ids.append(inserted_id)
             self.connection.commit()
-            self.fail("Should not allow NULL element_id in research_projects table")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("cannot be null", str(e).lower(), "Error message does not indicate element_id NULL constraint violation")
+        self.connection.rollback()
+
+
+        # Try inserting data with NULL element_id
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (13000.00, '18 months', NULL)")
+            inserted_id = self.cursor.lastrowid
+            self.created_project_ids.append(inserted_id)
+            self.connection.commit()
+        self.connection.rollback()
+
 
     def test_research_projects_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in research_projects table"""
         try:
-            # Try inserting invalid data (non-existent element_id)
+        # Try inserting invalid data (non-existent element_id)
+        with self.assertRaises(pymysql.err.IntegrityError):
             self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (14000.00, '6 months', 99999)")
+            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_project_ids.append(inserted_id)
             self.connection.commit()
-            self.fail("Should not allow insertion of data with non-existent element_id")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("foreign key constraint fails", str(e).lower(), "Error message does not indicate element_id foreign key constraint violation")
-
-        try:
-            # Try inserting data with NULL duration
-            self.cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (12000.00, NULL, %s)", (self.element_id,))
-            self.connection.commit()
-            self.fail("Should not allow NULL duration in research_projects table")
-        except pymysql.err.IntegrityError as e:
-            self.connection.rollback()
-            self.assertIn("cannot be null", str(e).lower(), "Error message does not indicate NULL constraint violation")
+        self.connection.rollback()

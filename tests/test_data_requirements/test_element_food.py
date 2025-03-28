@@ -4,46 +4,48 @@ import pymysql
 
 
 class TestElementFoodDataRequirements(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
-            db='park_management'
+            db='park_management',
+            cursorclass=pymysql.cursors.DictCursor # Use DictCursor for consistency
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
 
-        # Insert some test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('especie_animal', 'animal');")
-            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('especie_vegetal', 'vegetal');")
-            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('roca', 'mineral');")
-            cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (2, 'spring');")
-            cursor.execute("INSERT INTO mineral_elements (element_id, crystal_or_rock) VALUES (3, 'crystal');")
-            cls.connection.commit()
+        # Insert natural elements and get their IDs
+        with self.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('test_animal_food', 'animal_food');")
+            self.animal_id = cursor.lastrowid
+            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('test_vegetal_food', 'vegetal_food');")
+            self.vegetal_id = cursor.lastrowid
+            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('test_mineral_food', 'mineral_food');")
+            self.mineral_id = cursor.lastrowid
 
-        # Get the IDs of the inserted elements
-        with cls.connection.cursor() as cursor:
-            cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'especie_animal';")
-            cls.animal_id = cursor.fetchone()['id']
-            cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'especie_vegetal';")
-            cls.vegetal_id = cursor.fetchone()['id']
-            cursor.execute("SELECT id FROM natural_elements WHERE scientific_name = 'roca';")
-            cls.mineral_id = cursor.fetchone()['id']
-            cls.connection.commit()
+            # Insert into subtype tables using the obtained IDs
+            cursor.execute("INSERT INTO animal_elements (element_id, diet) VALUES (%s, 'omnivore');", (self.animal_id,)) # Need animal subtype for completeness
+            cursor.execute("INSERT INTO vegetal_elements (element_id, flowering_period) VALUES (%s, 'spring');", (self.vegetal_id,))
+            cursor.execute("INSERT INTO mineral_elements (element_id, crystal_or_rock) VALUES (%s, 'crystal');", (self.mineral_id,))
+            self.connection.commit()
 
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM element_food WHERE element_id IN (%s, %s, %s) OR food_element_id IN (%s, %s, %s)", (cls.animal_id, cls.vegetal_id, cls.mineral_id, cls.animal_id, cls.vegetal_id, cls.mineral_id))
-            cursor.execute("DELETE FROM vegetal_elements WHERE element_id = %s", (cls.vegetal_id,))
-            cursor.execute("DELETE FROM mineral_elements WHERE element_id = %s", (cls.mineral_id,))
-            cursor.execute("DELETE FROM natural_elements WHERE id IN (%s, %s, %s)", (cls.animal_id, cls.vegetal_id, cls.mineral_id))
-            cls.connection.commit()
-        cls.connection.close()
+
+    def tearDown(self):
+        # Clean up test data - order matters
+        with self.connection.cursor() as cursor:
+            # Delete from element_food first
+            cursor.execute("DELETE FROM element_food WHERE element_id IN (%s, %s, %s) OR food_element_id IN (%s, %s, %s)",
+                           (self.animal_id, self.vegetal_id, self.mineral_id, self.animal_id, self.vegetal_id, self.mineral_id))
+            # Delete from subtype tables
+            cursor.execute("DELETE FROM animal_elements WHERE element_id = %s", (self.animal_id,))
+            cursor.execute("DELETE FROM vegetal_elements WHERE element_id = %s", (self.vegetal_id,))
+            cursor.execute("DELETE FROM mineral_elements WHERE element_id = %s", (self.mineral_id,))
+            # Delete from natural_elements
+            cursor.execute("DELETE FROM natural_elements WHERE id IN (%s, %s, %s)",
+                           (self.animal_id, self.vegetal_id, self.mineral_id))
+            self.connection.commit()
+        self.connection.close()
 
     def test_element_food_table_exists(self):
         """Test that the element_food table exists"""

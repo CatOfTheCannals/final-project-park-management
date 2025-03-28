@@ -2,48 +2,45 @@ import unittest
 import pymysql
 
 class TestResearchPersonnelDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.element_id = None # Initialize
+        self.project_id = None # Initialize
+        self.personnel_id = None # Initialize
 
-        # Insert a test personnel record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, address, phone_numbers, salary) VALUES ('TEST33333333', 'TEST20333333333', 'Test Research Personnel', 'Test Address', '123-456-7890', 50000.00)")
-            cls.connection.commit()
+        # Insert dependencies: natural_element, research_project, personnel
+        with self.connection.cursor() as cursor:
+            # Element
+            cursor.execute("INSERT INTO natural_elements (scientific_name, common_name) VALUES ('TestElementRP', 'CommonRP');")
+            self.element_id = cursor.lastrowid
 
-            # Get the personnel_id of the inserted record
-            cursor.execute("SELECT id FROM personnel WHERE DNI = 'TEST33333333'")
-            result = cursor.fetchone()
-            cls.personnel_id = result['id']
+            # Project (add missing element_id)
+            cursor.execute("INSERT INTO research_projects (budget, duration, element_id) VALUES (10000.00, '12 months', %s)", (self.element_id,))
+            self.project_id = cursor.lastrowid
 
-        # Insert a test research project record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO research_projects (budget, duration) VALUES (10000.00, '12 months')")
-            cls.connection.commit()
-
-            # Get the project_id of the inserted record
-            cursor.execute("SELECT id FROM research_projects WHERE budget = 10000.00")
-            result = cursor.fetchone()
-            cls.project_id = result['id']
+            # Personnel
+            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTRP333', 'TESTRP20333', 'Test Researcher', 50000.00)")
+            self.personnel_id = cursor.lastrowid
+            self.connection.commit()
 
 
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM research_personnel WHERE personnel_id = %s", (cls.personnel_id,))
-            cursor.execute("DELETE FROM personnel WHERE DNI = 'TEST33333333'")
-            cursor.execute("DELETE FROM research_projects WHERE id = %s", (cls.project_id,))
-        cls.connection.commit()
-        cls.connection.close()
+    def tearDown(self):
+        # Clean up test data - order matters
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM research_personnel WHERE personnel_id = %s", (self.personnel_id,))
+            cursor.execute("DELETE FROM personnel WHERE id = %s", (self.personnel_id,))
+            cursor.execute("DELETE FROM research_projects WHERE id = %s", (self.project_id,))
+            cursor.execute("DELETE FROM natural_elements WHERE id = %s", (self.element_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_research_personnel_table_exists(self):
         """Test that the research_personnel table exists"""

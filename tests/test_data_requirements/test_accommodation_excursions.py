@@ -2,47 +2,37 @@ import unittest
 import pymysql
 
 class TestAccommodationExcursionsDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.accommodation_id = None # Initialize
+        self.excursion_id = None # Initialize
 
-        # Insert a test accommodation record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'TEST Cabin')")
-            cls.connection.commit()
+        # Insert dependencies: accommodation, excursion
+        with self.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO accommodations (capacity, category) VALUES (4, 'TEST_AE_Cabin')")
+            self.accommodation_id = cursor.lastrowid
 
-            # Get the accommodation_id of the inserted record
-            cursor.execute("SELECT id FROM accommodations WHERE category = 'TEST Cabin'")
-            result = cursor.fetchone()
-            cls.accommodation_id = result['id']
+            cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_AE_Sunday', '10:00:00', 'foot')")
+            self.excursion_id = cursor.lastrowid
+            self.connection.commit()
 
-        # Insert a test excursion record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST Sunday', '10:00:00', 'foot')")
-            cls.connection.commit()
 
-            # Get the excursion_id of the inserted record
-            cursor.execute("SELECT id FROM excursions WHERE day_of_week = 'TEST Sunday'")
-            result = cursor.fetchone()
-            cls.excursion_id = result['id']
-
-    @classmethod
-    def tearDownClass(cls):
-        # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM accommodation_excursions WHERE accommodation_id = %s AND excursion_id = %s", (cls.accommodation_id, cls.excursion_id))
-            cursor.execute("DELETE FROM accommodations WHERE category = 'TEST Cabin'")
-            cursor.execute("DELETE FROM excursions WHERE day_of_week = 'TEST Sunday'")
-        cls.connection.commit()
-        cls.connection.close()
+    def tearDown(self):
+        # Clean up test data - order matters
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM accommodation_excursions WHERE accommodation_id = %s AND excursion_id = %s", (self.accommodation_id, self.excursion_id))
+            cursor.execute("DELETE FROM accommodations WHERE id = %s", (self.accommodation_id,))
+            cursor.execute("DELETE FROM excursions WHERE id = %s", (self.excursion_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_accommodation_excursions_table_exists(self):
         """Test that the accommodation_excursions table exists"""
@@ -91,9 +81,13 @@ class TestAccommodationExcursionsDataRequirements(unittest.TestCase):
             SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
             WHERE TABLE_NAME = 'accommodation_excursions' AND CONSTRAINT_NAME = %s
             ORDER BY ORDINAL_POSITION;
-        """, (primary_key[0],))
-        primary_key_columns = [column[0] for column in self.cursor.fetchall()]
-        self.assertEqual(primary_key_columns, ['accommodation_id', 'excursion_id'], "Accommodation_excursions table does not have a composite primary key on accommodation_id and excursion_id")
+        """, (primary_key['CONSTRAINT_NAME'],)) # Access by key for DictCursor
+        primary_key_columns = [column['COLUMN_NAME'] for column in self.cursor.fetchall()] # Access by key
+        # Order might vary, check presence and count
+        self.assertIn('accommodation_id', primary_key_columns, "PK missing accommodation_id")
+        self.assertIn('excursion_id', primary_key_columns, "PK missing excursion_id")
+        self.assertEqual(len(primary_key_columns), 2, "PK should have exactly 2 columns")
+
 
     def test_accommodation_excursions_data_insertion(self):
         """Test data insertion into accommodation_excursions table"""

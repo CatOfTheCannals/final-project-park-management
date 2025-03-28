@@ -2,36 +2,32 @@ import unittest
 import pymysql
 
 class TestManagementPersonnelDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.personnel_id = None # Initialize
 
         # Insert a test personnel record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, address, phone_numbers, salary) VALUES ('TEST11111111', 'TEST20111111111', 'Test Management Personnel', 'Test Address', '123-456-7890', 50000.00)")
-            cls.connection.commit()
+        with self.connection.cursor() as cursor:
+            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTMP111', 'TESTMP20111', 'Test Manager', 50000.00)")
+            self.personnel_id = cursor.lastrowid
+            self.connection.commit()
 
-            # Get the personnel_id of the inserted record
-            cursor.execute("SELECT id FROM personnel WHERE DNI = 'TEST11111111'")
-            result = cursor.fetchone()
-            cls.personnel_id = result['id']
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         # Clean up test data
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM management_personnel WHERE personnel_id = %s", (cls.personnel_id,))
-            cursor.execute("DELETE FROM personnel WHERE DNI = 'TEST11111111'")
-        cls.connection.commit()
-        cls.connection.close()
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM management_personnel WHERE personnel_id = %s", (self.personnel_id,))
+            cursor.execute("DELETE FROM personnel WHERE id = %s", (self.personnel_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_management_personnel_table_exists(self):
         """Test that the management_personnel table exists"""

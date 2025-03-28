@@ -2,53 +2,45 @@ import unittest
 import pymysql
 
 class TestConservationPersonnelDataRequirements(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Reuse the connection from previous tests
-        cls.connection = pymysql.connect(
+    # Use setUp and tearDown for test isolation
+    def setUp(self):
+        self.connection = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             db='park_management',
             cursorclass=pymysql.cursors.DictCursor
         )
-        cls.cursor = cls.connection.cursor()
+        self.cursor = self.connection.cursor()
+        self.personnel_id = None # Initialize
+        self.park_id = None # Initialize
+        self.area_number = 1 # Hardcoded for simplicity
 
-        # Insert a test personnel record
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, address, phone_numbers, salary) VALUES ('TEST44444444', 'TEST20444444444', 'Test Conservation Personnel', 'Test Address', '123-456-7890', 50000.00)")
-            cls.connection.commit()
+        # Insert dependencies: personnel, park, park_area
+        with self.connection.cursor() as cursor:
+            # Personnel
+            cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTCP444', 'TESTCP20444', 'Test Conservator', 50000.00)")
+            self.personnel_id = cursor.lastrowid
 
-            # Get the personnel_id of the inserted record
-            cursor.execute("SELECT id FROM personnel WHERE DNI = 'TEST44444444'")
-            result = cursor.fetchone()
-            cls.personnel_id = result['id']
+            # Park
+            cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Test Park CP', '2024-01-01', 'testcp@example.com', 'CP', 100.00)")
+            self.park_id = cursor.lastrowid
 
-        # Insert a test park and area
-        with cls.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALUES ('Test Park Cons', '2024-01-01', 'testcons@example.com', 'CONS', 100.00)")
-            cls.connection.commit()
-            cursor.execute("SELECT id FROM parks WHERE code = 'CONS'")
-            cls.park_id = cursor.fetchone()['id']
+            # Park Area
+            cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, %s, 'Test Area CP', 100.00)", (self.park_id, self.area_number))
+            self.connection.commit()
 
-            cursor.execute("INSERT INTO park_areas (park_id, area_number, name, extension) VALUES (%s, 1, 'Test Area Cons', 100.00)", (cls.park_id,))
-            cls.connection.commit()
-            cls.area_number = 1 # Hardcoded for simplicity
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         # Clean up test data - order matters due to FKs
-        with cls.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM conservation_personnel WHERE personnel_id = %s", (cls.personnel_id,))
-            cursor.execute("DELETE FROM personnel WHERE DNI = 'TEST44444444'")
-            # Need to delete area_elements if any were linked to this area before deleting park_areas
-            # cursor.execute("DELETE FROM area_elements WHERE park_id = %s AND area_number = %s", (cls.park_id, cls.area_number))
-            cursor.execute("DELETE FROM park_areas WHERE park_id = %s AND area_number = %s", (cls.park_id, cls.area_number))
-            # Need to delete park_provinces if any were linked before deleting parks
-            # cursor.execute("DELETE FROM park_provinces WHERE park_id = %s", (cls.park_id,))
-            cursor.execute("DELETE FROM parks WHERE id = %s", (cls.park_id,))
-        cls.connection.commit()
-        cls.connection.close()
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM conservation_personnel WHERE personnel_id = %s", (self.personnel_id,))
+            cursor.execute("DELETE FROM personnel WHERE id = %s", (self.personnel_id,))
+            # Assuming no area_elements or park_provinces were created that depend on these
+            cursor.execute("DELETE FROM park_areas WHERE park_id = %s AND area_number = %s", (self.park_id, self.area_number))
+            cursor.execute("DELETE FROM parks WHERE id = %s", (self.park_id,))
+        self.connection.commit()
+        self.connection.close()
 
     def test_conservation_personnel_table_exists(self):
         """Test that the conservation_personnel table exists"""

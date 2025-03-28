@@ -69,35 +69,11 @@ class TestExcursionsDataRequirements(unittest.TestCase):
 
     def test_excursions_required_fields_not_null(self):
         """Test that required fields (day_of_week, time, type) cannot be null"""
-        try:
-            # Try inserting data with NULL day_of_week
-            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES (NULL, '10:00:00', 'foot')")
-                inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
-                self.created_ids.append(inserted_id)
-                self.connection.commit()
-            self.connection.rollback()
-
-            # Try inserting data with NULL time
-            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Null', NULL, 'foot')")
-                inserted_id = self.cursor.lastrowid
-                self.created_ids.append(inserted_id)
-                self.connection.commit()
-            self.connection.rollback()
-
-            # Try inserting data with NULL type
-            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-                self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Null', '10:00:00', NULL)")
-                inserted_id = self.cursor.lastrowid
-                self.created_ids.append(inserted_id)
-                self.connection.commit()
-            self.connection.rollback()
-        except Exception as e: # Catch any unexpected error during the setup/test itself
-            self.fail(f"An unexpected error occurred in test_excursions_required_fields_not_null: {e}")
-
-
-    def test_excursions_type_enum_values(self):
+        # Try inserting data with NULL day_of_week
+        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+            self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES (NULL, '10:00:00', 'foot')")
+            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+            self.created_ids.append(inserted_id)
             self.connection.commit()
         self.connection.rollback()
 
@@ -120,7 +96,6 @@ class TestExcursionsDataRequirements(unittest.TestCase):
 
     def test_excursions_type_enum_values(self):
         """Test that the 'type' column only accepts ENUM values ('foot', 'vehicle')"""
-        try:
         # Try inserting data with invalid type value
         with self.assertRaises(pymysql.err.DataError):
             self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Day_Invalid', '10:00:00', 'invalid')")

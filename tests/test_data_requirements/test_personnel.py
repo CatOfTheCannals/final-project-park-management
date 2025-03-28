@@ -109,11 +109,31 @@ class TestPersonnelDataRequirements(unittest.TestCase):
     def test_personnel_required_fields_not_null(self):
         """Test that required fields (DNI, CUIL, name) cannot be null"""
         try:
-        # Try inserting data with NULL DNI
-        with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-            self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES (NULL, 'TESTP234', 'Null DNI Name', 90000.00)")
-            inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
-            self.created_ids.append(inserted_id)
+            # Try inserting data with NULL DNI
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES (NULL, 'TESTP234', 'Null DNI Name', 90000.00)")
+                inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
+                self.created_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+
+            # Try inserting data with NULL CUIL
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP345', NULL, 'Null CUIL Name', 100000.00)")
+                inserted_id = self.cursor.lastrowid
+                self.created_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+
+            # Try inserting data with NULL name
+            with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
+                self.cursor.execute("INSERT INTO personnel (DNI, CUIL, name, salary) VALUES ('TESTP456', 'TESTP245', NULL, 110000.00)")
+                inserted_id = self.cursor.lastrowid
+                self.created_ids.append(inserted_id)
+                self.connection.commit()
+            self.connection.rollback()
+        except Exception as e: # Catch any unexpected error during the setup/test itself
+            self.fail(f"An unexpected error occurred in test_personnel_required_fields_not_null: {e}")
             self.connection.commit()
         self.connection.rollback()
 

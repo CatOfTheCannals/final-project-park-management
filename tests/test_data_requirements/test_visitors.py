@@ -183,62 +183,6 @@ class TestVisitorsDataRequirements(unittest.TestCase):
             self.connection.commit() # This commit won't be reached if error is raised
         self.connection.rollback() # Rollback after expected error or unexpected success
 
-    # Removed duplicated tests below
-
-
-    # def test_visitors_required_fields_not_null(self):
-    #     """Test that required fields (DNI, name) cannot be null"""
-    #     try:
-    #         # Try inserting data with NULL DNI
-    #         with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-    #             self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES (NULL, 'Null DNI Name', %s, %s)", (self.accommodation_id, self.park_id))
-    #             inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
-    #             self.created_visitor_ids.append(inserted_id)
-    #             self.connection.commit()
-    #         self.connection.rollback()
-
-    #         # Try inserting data with NULL name
-    #         with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-    #             self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV456', NULL, %s, %s)", (self.accommodation_id, self.park_id))
-    #             inserted_id = self.cursor.lastrowid
-    #             self.created_visitor_ids.append(inserted_id)
-    #             self.connection.commit()
-    #         self.connection.rollback()
-    #     except Exception as e: # Catch any unexpected error during the setup/test itself
-    #         self.fail(f"An unexpected error occurred in test_visitors_required_fields_not_null: {e}")
-
-
-    # def test_visitors_foreign_key_constraint(self):
-    #     self.connection.commit()
-    #     self.connection.rollback()
-
-    #     # Try inserting data with NULL name
-    #     with self.assertRaises((pymysql.err.IntegrityError, pymysql.err.OperationalError)):
-    #         self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV456', NULL, %s, %s)", (self.accommodation_id, self.park_id))
-    #         inserted_id = self.cursor.lastrowid
-    #         self.created_visitor_ids.append(inserted_id)
-    #         self.connection.commit()
-    #     self.connection.rollback()
-
-
-    # def test_visitors_foreign_key_constraint(self):
-    #     """Test that visitors table has foreign key constraint on accommodation_id"""
-    #     self.cursor.execute("""
-    #         SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-    #         WHERE TABLE_NAME = 'visitors' AND COLUMN_NAME = 'accommodation_id'
-    #         AND REFERENCED_TABLE_NAME = 'accommodations';
-    #     """)
-    #     accommodation_fk = self.cursor.fetchone()
-    #     self.assertIsNotNone(accommodation_fk, "Visitors table does not have foreign key constraint on 'accommodation_id'")
-
-    #     self.cursor.execute("""
-    #         SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-    #         WHERE TABLE_NAME = 'visitors' AND COLUMN_NAME = 'park_id'
-    #         AND REFERENCED_TABLE_NAME = 'parks';
-    #     """)
-    #     park_fk = self.cursor.fetchone()
-    #     self.assertIsNotNone(park_fk, "Visitors table does not have foreign key constraint on 'park_id'")
-
     def test_visitors_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in visitors table"""
         # Try inserting invalid data (non-existent accommodation_id)
@@ -258,9 +202,6 @@ class TestVisitorsDataRequirements(unittest.TestCase):
                 self.created_visitor_ids.append(inserted_id)
                 self.connection.commit()
             self.connection.rollback()
-            WHERE TABLE_NAME = 'visitors' AND COLUMN_NAME = 'accommodation_id'
-            AND REFERENCED_TABLE_NAME = 'accommodations';
-        """)
         accommodation_fk = self.cursor.fetchone()
         self.assertIsNotNone(accommodation_fk, "Visitors table does not have foreign key constraint on 'accommodation_id'")
 

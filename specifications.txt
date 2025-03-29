@@ -11,8 +11,8 @@
 2.b. Por motivos de eficiencia se desea favorecer las consultas referentes al número
 de parques existentes en cada Provincia and la superficie total declarada parque nat-
 ural en cada Provincia.
-2.b.solution. in order to be able to get the totfl park area for each province, we need to know how much surface/extension is split between provinces for interprovince parks. TESTED
-2.b.maybe. add a composite index on park_provinces (province_id, extension_in_province)
+2.b.solution. in order to be able to get the total park area for each province, we need to know how much surface/extension is split between provinces for interprovince parks. TESTED (Structure supports query)
+2.b.note. Efficiency aspect relates to Additional Req 5 (Indexes).
 2.c. Un parque puede estar compartido por más de una Provincia. TESTED
 3.a. Store information about park areas, including name and extension.  TESTED
 3.b. A park is composed of several areas. TESTED
@@ -50,9 +50,9 @@ que. Cada uno lo realiza en una especialidad determinada (limpieza, caninos). (I
 
 # Additional Requirements from 2019 TP
 1. Verify if public information can be used in the model (e.g., a list of national parks). DONE, information already in data dir
-2. Estimate the size of the tables.
-3. Identify species found in all parks.
-4. Identify species found in only one park.
-5. Propose suitable indexes for the queries and analyze the execution plan.
-6. Create a procedure that compares tables, indexes, and constraints of two databases.
-7. Investigate concurrency control and recovery mechanisms in two commercial database engines.
+2. Estimate the size of the tables. (Analysis Task)
+3. Identify species found in all parks. TESTED
+4. Identify species found in only one park. TESTED
+5. Propose suitable indexes for the queries and analyze the execution plan. (Analysis Task)
+6. Create a procedure that compares tables, indexes, and constraints of two databases. (Implemented, not explicitly tested)
+7. Investigate concurrency control and recovery mechanisms in two commercial database engines. (Report Task)

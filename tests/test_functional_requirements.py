@@ -232,6 +232,48 @@ class TestFunctionalRequirements(TestCase):
         self.assertEqual(log_entry['old_count'], initial_count, "Logged old_count is incorrect")
         self.assertEqual(log_entry['new_count'], decreased_count, "Logged new_count is incorrect")
 
+        # Clean up the log entry created by this test
+        self.cursor.execute("DELETE FROM email_log WHERE element_scientific_name = 'Plantus communis' AND park_email = 'parqueA@example.com';")
+        self.connection.commit()
+
+    def test_05_species_in_all_parks(self):
+        """Test Additional Req 3: Identify species found in all parks."""
+        # Setup: Plantus communis is in A, B, C (all 3 parks).
+        # Plantus rarus is only in A. Animalia familiaris is only in C.
+        self.cursor.execute("SELECT COUNT(DISTINCT id) FROM parks;")
+        total_parks = self.cursor.fetchone()['COUNT(DISTINCT id)']
+
+        self.cursor.execute("""
+            SELECT ne.scientific_name
+            FROM natural_elements ne
+            JOIN area_elements ae ON ne.id = ae.element_id
+            GROUP BY ne.id, ne.scientific_name
+            HAVING COUNT(DISTINCT ae.park_id) = %s;
+        """, (total_parks,))
+        results = self.cursor.fetchall()
+
+        self.assertEqual(len(results), 1, "Expected exactly one species to be in all parks")
+        self.assertEqual(results[0]['scientific_name'], 'Plantus communis', "Expected 'Plantus communis' to be in all parks")
+
+    def test_06_species_in_only_one_park(self):
+        """Test Additional Req 4: Identify species found in only one park."""
+        # Setup: Plantus rarus is only in A. Animalia familiaris is only in C.
+        # Plantus communis is in A, B, C.
+        self.cursor.execute("""
+            SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count
+            FROM natural_elements ne
+            JOIN area_elements ae ON ne.id = ae.element_id
+            GROUP BY ne.id, ne.scientific_name
+            HAVING park_count = 1;
+        """)
+        results = self.cursor.fetchall()
+        species_in_one_park = {row['scientific_name'] for row in results}
+
+        self.assertEqual(len(species_in_one_park), 2, "Expected exactly two species to be in only one park")
+        self.assertIn('Plantus rarus', species_in_one_park, "Expected 'Plantus rarus' to be in only one park")
+        self.assertIn('Animalia familiaris', species_in_one_park, "Expected 'Animalia familiaris' to be in only one park")
+
+
         # Clean up: Restore original count (optional, depends if other tests rely on it)
         # self.cursor.execute("""
         #     UPDATE area_elements SET number_of_individuals = %s

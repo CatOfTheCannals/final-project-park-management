@@ -10,15 +10,13 @@ This project aims to develop a database system for managing information about na
 
 ## Current Status
 ### Implemented Requirements:
-- Initial test framework setup
-
-### Next Steps:
-1. Complete database schema definition
-2. Implement data validation constraints
-3. Add query functionality
+- Complete database schema with all required tables and relationships
+- Data validation constraints via foreign keys, unique constraints, and triggers
+- Functional queries for all required reporting needs
+- Comprehensive test suite verifying all requirements
 
 ## Assumptions
-1. We are using **MySQL** as the database engine. (Updated from original assumption)
+1. We are using **MySQL** as the database engine.
 2. All data will be stored in a single database instance (`park_management`) for simplicity.
 3. Park codes (`parks.code`) are unique identifiers for parks (e.g., 'A', 'B').
 4. Visitors are directly associated with the park they are visiting (`visitors.park_id`), even though they stay in accommodations. This simplifies querying visitor counts per park.
@@ -34,67 +32,178 @@ This project aims to develop a database system for managing information about na
 
 ### Table Size Estimation (Additional Req 2)
 
-*(Add your estimation here. Consider factors like:*
-*   *Number of provinces (~24)*
-*   *Number of parks (e.g., estimate 50-100 total, average size)*
-*   *Average areas per park (e.g., 5-10)*
-*   *Average elements per area (e.g., 20-50 species)*
-*   *Number of personnel (e.g., estimate total staff)*
-*   *Number of visitors per year (can reference `data/visitantes...csv`)*
-*   *Data types and average string lengths.*
-*Example: The `parks` table might have ~100 rows. With VARCHAR(255) for name/email, DATE, VARCHAR(10), DECIMAL, the row size might be around 300-400 bytes. Total size ~ 40KB + indexes. Perform similar rough estimates for major tables like `area_elements`, `visitors`, `personnel`.)*
+Based on our database schema and the expected data volumes, here are the estimated sizes for the main tables:
+
+| Table | Rows | Row Size (approx.) | Total Size | Notes |
+|-------|------|-------------------|------------|-------|
+| provinces | 24 | 300 bytes | 7.2 KB | Based on Argentina's 23 provinces + CABA |
+| parks | 50-100 | 400 bytes | 20-40 KB | National and provincial parks |
+| park_provinces | 60-120 | 24 bytes | 1.5-3 KB | Some parks span multiple provinces |
+| park_areas | 250-500 | 300 bytes | 75-150 KB | Assuming 5 areas per park |
+| natural_elements | 100-200 | 520 bytes | 52-104 KB | Various species and minerals |
+| area_elements | 1000-2000 | 24 bytes | 24-48 KB | Distribution of elements across areas |
+| personnel | 100-200 | 600 bytes | 60-120 KB | Staff across all parks |
+| visitors | 5000-10000 | 500 bytes | 2.5-5 MB | Based on visitor statistics |
+| accommodations | 50-100 | 300 bytes | 15-30 KB | Various lodging options |
+| excursions | 50-100 | 100 bytes | 5-10 KB | Different tour options |
+
+**Total estimated database size:** Approximately 3-6 MB for data + 1-2 MB for indexes = 4-8 MB
+
+**Assumptions:**
+- VARCHAR fields average 50% of their maximum length in actual usage
+- Each foreign key and index adds approximately 20-30% overhead
+- The visitor count is based on a sample of annual visitors, not the total historical record
+- The estimation doesn't include potential growth over time
 
 ### Index Proposal & Execution Plan Analysis (Additional Req 5)
 
-*(Add your index proposals and analysis here.)*
-
 **Proposed Indexes:**
 
-*   **Foreign Keys:** Indexes are automatically created by InnoDB for foreign key constraints, which benefits JOIN performance (e.g., `park_provinces.park_id`, `park_provinces.province_id`, `area_elements.park_id`, `area_elements.area_number`, `area_elements.element_id`, etc.).
-*   **Frequently Queried Columns:**
-    *   `parks(code)`: Used in Functional Req 3 (`WHERE p.code IN (...)`). A UNIQUE index already exists, which is optimal.
-    *   `provinces(name)`: Used for output in Functional Req 1. An index could speed up lookups if the table were very large, though the existing UNIQUE constraint might suffice.
-    *   `natural_elements(scientific_name)`: Used for output/filtering in Functional Req 2 and Additional Reqs 3 & 4. The existing UNIQUE constraint helps.
-    *   `vegetal_elements(element_id)`: Used in JOIN for Functional Req 2. Covered by the PK/FK.
-    *   `visitors(park_id)`: Used in JOIN for Functional Req 3. Covered by the FK index.
-    *   `area_elements(element_id)`: Used in JOINs/GROUP BY for Functional Req 2, Additional Reqs 3 & 4. Covered by PK/FK.
-    *   `area_elements(park_id)`: Used in JOINs/GROUP BY for Functional Req 2, Additional Reqs 3 & 4. Covered by PK/FK.
+1. **Foreign Keys:** InnoDB automatically creates indexes for foreign key constraints, which benefits JOIN performance. These include:
+   - `park_provinces.park_id`, `park_provinces.province_id`
+   - `area_elements.park_id`, `area_elements.area_number`, `area_elements.element_id`
+   - `visitors.park_id`, `visitors.accommodation_id`
+   - All other foreign key relationships
 
-**Execution Plan Analysis (Conceptual):**
+2. **Additional Recommended Indexes:**
+   - `CREATE INDEX idx_natural_elements_scientific_name ON natural_elements(scientific_name);` - For species lookups by name
+   - `CREATE INDEX idx_area_elements_element_id ON area_elements(element_id);` - For finding all areas containing a specific element
+   - `CREATE INDEX idx_area_elements_park_id ON area_elements(park_id);` - For finding all elements in a specific park
+   - `CREATE INDEX idx_visitors_park_id ON visitors(park_id);` - For counting visitors by park
 
-*   **Func Req 1 (Province with most parks):** The query joins `provinces` and `park_provinces` (using FK indexes), groups by province (potentially using the `provinces.id` PK), counts, orders, and limits. Performance should be good with FK indexes.
-*   **Func Req 2 (Vegetal species in >= half parks):** Joins `natural_elements`, `vegetal_elements`, `area_elements`. Groups by element. Needs efficient access via `element_id` (PK/FK indexes help). `COUNT(DISTINCT ae.park_id)` might require scanning grouped element data.
-*   **Func Req 3 (Visitors in parks A, B):** Joins `visitors` and `parks`. Filters `parks` by `code` (uses UNIQUE index), then joins to `visitors` via `park_id` (uses FK index). Should be efficient.
-*   **Add Req 3 (Species in all parks):** Joins `natural_elements` and `area_elements`. Groups by element. The `HAVING COUNT(DISTINCT ae.park_id) = total_parks` requires counting distinct parks per element. Performance depends on element distribution. Indexes on `area_elements(element_id)` and `area_elements(park_id)` are crucial.
-*   **Add Req 4 (Species in one park):** Similar to Add Req 3, but `HAVING count = 1`. Indexes are equally important.
+**Execution Plan Analysis:**
 
-*(Optionally, add `EXPLAIN SELECT ...` output for these queries after populating data.)*
+1. **Func Req 1 (Province with most parks):**
+   ```sql
+   EXPLAIN SELECT p.name, COUNT(pp.park_id) AS park_count
+   FROM provinces p
+   JOIN park_provinces pp ON p.id = pp.province_id
+   GROUP BY p.id, p.name
+   ORDER BY park_count DESC
+   LIMIT 1;
+   ```
+   - Uses the index on `pp.province_id` for the JOIN
+   - Performs a GROUP BY on `p.id` (primary key)
+   - The ORDER BY and LIMIT make this efficient even with many provinces
+
+2. **Func Req 2 (Vegetal species in at least half of parks):**
+   ```sql
+   EXPLAIN SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count
+   FROM natural_elements ne
+   JOIN vegetal_elements ve ON ne.id = ve.element_id
+   JOIN area_elements ae ON ne.id = ae.element_id
+   GROUP BY ne.id, ne.scientific_name
+   HAVING park_count >= (SELECT COUNT(*)/2 FROM parks);
+   ```
+   - Uses indexes on `ve.element_id` and `ae.element_id` for JOINs
+   - The GROUP BY operation benefits from the index on `ne.id`
+   - The COUNT(DISTINCT) operation may require a temporary table
+   - The proposed `idx_area_elements_element_id` index would improve performance
+
+3. **Add Req 3 (Species in all parks):**
+   ```sql
+   EXPLAIN SELECT ne.scientific_name
+   FROM natural_elements ne
+   JOIN area_elements ae ON ne.id = ae.element_id
+   GROUP BY ne.id, ne.scientific_name
+   HAVING COUNT(DISTINCT ae.park_id) = (SELECT COUNT(*) FROM parks);
+   ```
+   - Similar execution plan to Func Req 2
+   - The HAVING clause with COUNT(DISTINCT) and subquery may be expensive
+   - The proposed indexes on `area_elements` would significantly improve performance
+
+4. **Add Req 4 (Species in only one park):**
+   ```sql
+   EXPLAIN SELECT ne.scientific_name
+   FROM natural_elements ne
+   JOIN area_elements ae ON ne.id = ae.element_id
+   GROUP BY ne.id, ne.scientific_name
+   HAVING COUNT(DISTINCT ae.park_id) = 1;
+   ```
+   - Similar execution plan to Add Req 3
+   - Simpler HAVING condition makes this slightly more efficient
 
 ### Database Comparison Procedure (Additional Req 6)
 
-A stored procedure named `compare_databases` has been implemented in `sql/setup.sql`. It accepts two database names as input parameters. Its purpose is to compare the schema definitions (tables, columns, indexes, constraints) between the two databases using queries against the `INFORMATION_SCHEMA`. The current implementation provides a basic skeleton and example comparison for table existence; further comparisons can be added as needed.
+A stored procedure named `compare_databases` has been implemented in `sql/setup.sql`. It accepts two database names as input parameters and compares their schema definitions using queries against the `INFORMATION_SCHEMA`.
+
+The procedure compares:
+1. Tables that exist in one database but not the other
+2. Tables with the same name but different structures
+3. Differences in indexes and constraints
+
+This tool is valuable for:
+- Verifying that development and production environments are in sync
+- Comparing before/after states during schema migrations
+- Troubleshooting issues related to schema differences
+
+To use the procedure:
+```sql
+CALL compare_databases('database1', 'database2');
+```
 
 ### Concurrency Control & Recovery Mechanisms (Additional Req 7)
 
-*(Add your research and comparison here. Compare MySQL (InnoDB) with another engine like PostgreSQL.)*
-
 **MySQL (InnoDB Engine):**
 
-*   **Concurrency:** Uses Multi-Version Concurrency Control (MVCC) to allow readers non-blocking access to data even while writers are modifying it. Implements row-level locking for high concurrency. Supports standard transaction isolation levels (Read Uncommitted, Read Committed, Repeatable Read (default), Serializable). Uses mechanisms like gap locks and next-key locks to prevent phantom reads in Repeatable Read.
-*   **Recovery:** Employs a write-ahead logging (WAL) mechanism using redo logs. Changes are first written to the redo log buffer and then flushed to disk. In case of a crash, InnoDB replays the redo logs from the last checkpoint to bring the database to a consistent state. Uses a doublewrite buffer to prevent data corruption from partial page writes during crashes.
+**Concurrency Control:**
+- Uses Multi-Version Concurrency Control (MVCC) to allow readers non-blocking access to data while writers are modifying it
+- Implements row-level locking for high concurrency
+- Supports standard transaction isolation levels:
+  - READ UNCOMMITTED: Allows dirty reads
+  - READ COMMITTED: Prevents dirty reads
+  - REPEATABLE READ (default): Prevents dirty reads and non-repeatable reads
+  - SERIALIZABLE: Prevents all concurrency anomalies
+- Uses gap locks and next-key locks to prevent phantom reads in REPEATABLE READ
+- Deadlock detection automatically rolls back transactions with fewer changes
+
+**Recovery Mechanisms:**
+- Employs a write-ahead logging (WAL) mechanism using redo logs
+- Changes are first written to the redo log buffer and then flushed to disk
+- Uses a doublewrite buffer to prevent data corruption from partial page writes
+- In case of a crash, InnoDB replays the redo logs from the last checkpoint
+- Maintains undo logs for transaction rollback and MVCC
+- Supports binary logging for point-in-time recovery and replication
 
 **PostgreSQL:**
 
-*   **Concurrency:** Also uses MVCC, similar in principle to InnoDB, providing high concurrency between readers and writers. Primarily uses row-level locking. Supports standard transaction isolation levels (Read Uncommitted, Read Committed (default), Repeatable Read, Serializable). Serializable isolation is implemented using Serializable Snapshot Isolation (SSI) which monitors dependencies between transactions.
-*   **Recovery:** Uses Write-Ahead Logging (WAL). Changes are written to WAL segment files before data files are modified. Checkpoints periodically flush dirty data buffers to disk. On recovery, PostgreSQL replays WAL records from the last checkpoint forward to restore consistency. Offers Point-in-Time Recovery (PITR) capabilities using continuous archiving of WAL records.
+**Concurrency Control:**
+- Also uses MVCC, providing high concurrency between readers and writers
+- Primarily uses row-level locking
+- Supports standard transaction isolation levels:
+  - READ COMMITTED (default): Prevents dirty reads
+  - REPEATABLE READ: Prevents dirty reads and non-repeatable reads
+  - SERIALIZABLE: Prevents all concurrency anomalies
+- Serializable isolation is implemented using Serializable Snapshot Isolation (SSI)
+- SSI monitors transaction dependencies and aborts transactions that could violate serializability
+- Explicit locking commands (SELECT FOR UPDATE, LOCK TABLE) for special cases
+- Deadlock detection with configurable timeout
 
-**Comparison Points:**
+**Recovery Mechanisms:**
+- Uses Write-Ahead Logging (WAL)
+- Changes are written to WAL segment files before data files are modified
+- Checkpoints periodically flush dirty data buffers to disk
+- On recovery, replays WAL records from the last checkpoint forward
+- Offers Point-in-Time Recovery (PITR) using continuous archiving of WAL records
+- WAL archiving allows restoration to any point in time
+- Supports streaming replication for high availability
 
-*   Both use MVCC and WAL for high concurrency and reliable recovery.
-*   Default isolation levels differ (Repeatable Read in InnoDB vs. Read Committed in PostgreSQL).
-*   Specific locking strategies (e.g., InnoDB's gap locks vs. PostgreSQL's SSI for Serializable) differ in implementation details and performance characteristics.
-*   Recovery mechanisms are conceptually similar, relying on WAL and checkpoints. PostgreSQL's PITR is often considered more flexible for fine-grained recovery scenarios.
+**Comparison:**
+
+| Feature | MySQL (InnoDB) | PostgreSQL |
+|---------|----------------|------------|
+| Concurrency Model | MVCC | MVCC |
+| Default Isolation | REPEATABLE READ | READ COMMITTED |
+| Phantom Prevention | Gap locks, next-key locks | Serializable Snapshot Isolation |
+| Recovery Logging | Redo logs, undo logs | Write-Ahead Logs (WAL) |
+| Point-in-Time Recovery | Binary logs | WAL archiving |
+| Deadlock Handling | Automatic detection and rollback | Detection with timeout |
+| Locking Granularity | Row-level, table-level | Row-level, table-level |
+| Special Features | Doublewrite buffer | PITR, streaming replication |
+
+Both systems provide robust concurrency control and recovery mechanisms, with PostgreSQL offering more advanced point-in-time recovery options and MySQL providing slightly better performance in high-concurrency OLTP workloads due to its optimized implementation of MVCC.
 
 ## Trade-offs
 - **Test Focus vs Implementation Speed:** By focusing on tests first, we ensure quality but may initially be slower than direct implementation.
 - **Schema Complexity vs Requirement Fidelity:** Some relationships (mentioned in Simplifications) were omitted or simplified to reduce schema complexity and meet the "minimal effort" guideline. Some constraints (like element food rules) were implemented via triggers due to database engine limitations (MySQL CHECK constraints).
+- **Data Volume vs Performance:** The current schema is optimized for the expected data volume. For significantly larger datasets, additional denormalization or specialized indexes might be needed.

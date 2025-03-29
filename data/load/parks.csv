@@ -1,0 +1,21 @@
+id,name,declaration_date,contact_email,code,total_area
+1,"Nahuel Huapi","1934-04-29","nahuelhuapi@parquesnacionales.gob.ar","NH",717261
+2,"Iguazú","1934-10-09","iguazu@parquesnacionales.gob.ar","IG",67620
+3,"El Palmar","1966-06-23","elpalmar@parquesnacionales.gob.ar","EP",8500
+4,"Los Glaciares","1937-05-11","glaciares@parquesnacionales.gob.ar","LG",726927
+5,"Tierra del Fuego","1960-10-15","tierradelfuego@parquesnacionales.gob.ar","TF",68909
+6,"Talampaya","1997-07-11","talampaya@parquesnacionales.gob.ar","TA",215000
+7,"Sierra de las Quijadas","1991-12-10","quijadas@parquesnacionales.gob.ar","SQ",73785
+8,"Calilegua","1979-07-19","calilegua@parquesnacionales.gob.ar","CA",76306
+9,"El Rey","1948-05-24","elrey@parquesnacionales.gob.ar","ER",44162
+10,"Los Cardones","1996-12-11","cardones@parquesnacionales.gob.ar","LC",64117
+11,"Aconcagua","1983-11-28","aconcagua@mendoza.gob.ar","A",71000
+12,"Iberá","2018-12-05","ibera@corrientes.gob.ar","B",159800
+13,"Pereyra Iraola","1967-11-01","pereyrairaola@buenosaires.gob.ar","PI",10248
+14,"Islas de Santa Fe","1999-12-29","islasdesantafe@santafe.gob.ar","IS",4096
+15,"Chancaní","1986-07-15","chancani@cordoba.gob.ar","CH",4920
+16,"Ernesto Tornquist","1958-06-01","tornquist@buenosaires.gob.ar","ET",6700
+17,"Laguna de Mar Chiquita","1991-01-05","marchiquita@cordoba.gob.ar","LM",80000
+18,"Península Valdés","1983-09-29","peninsulavaldes@chubut.gob.ar","PV",360000
+19,"Parque Luro","1997-05-12","parqueluro@lapampa.gob.ar","PL",7600
+20,"Bañados del Río Dulce","2008-11-21","riodulce@santiago.gob.ar","RD",9000

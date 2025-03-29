@@ -30,11 +30,19 @@ This project implements a database system for managing information about natural
 
 To populate the database with sample data for demonstration and query testing:
 
-1.  **Run Populate Script:** After running `setup.sql`, execute the `populate_data.sql` script:
+1.  **Ensure CSV Files Exist:** Verify that the CSV data files are present in the `data/load/` directory relative to where you will run the `mysql` client.
+2.  **Enable `local_infile` (If Needed):** The `populate_data.sql` script uses `LOAD DATA LOCAL INFILE`. This requires both the MySQL server and the client to have this feature enabled.
+    *   **Server:** Check the `local_infile` system variable (`SHOW GLOBAL VARIABLES LIKE 'local_infile';`). If it's `OFF`, you need to start the server with `local-infile=1` in its configuration file (e.g., `my.cnf` or `my.ini`) or set it dynamically (`SET GLOBAL local_infile = 1;` - requires SUPER privilege).
+    *   **Client:** When connecting with the `mysql` client, use the `--local-infile=1` option:
+        ```bash
+        mysql --local-infile=1 -u root -p
+        ```
+3.  **Run Populate Script:** After running `setup.sql` and ensuring `local_infile` is enabled, execute the `populate_data.sql` script:
     ```bash
     # Example using mysql client (enter password when prompted)
-    mysql -u root -p < sql/populate_data.sql
+    mysql --local-infile=1 -u root -p < sql/populate_data.sql
     ```
+    *Note: If you cannot enable `local_infile`, you would need to modify `populate_data.sql` to use `LOAD DATA INFILE` (without `LOCAL`) and ensure the CSV files are placed in a directory accessible by the MySQL server process itself (often restricted by the `secure_file_priv` system variable).*
 
 ## Running Tests
 
@@ -69,6 +77,7 @@ To remove the database created by this project:
 ## Project Structure
 
 *   `data/`: Contains original CSV data files (read-only reference).
+*   `data/load/`: Contains CSV files used to populate the database with mock data.
 *   `sql/`: Contains SQL scripts for setup, teardown, and data population.
 *   `tests/`: Contains Python unittest files.
     *   `test_database_connection.py`: Tests basic connection and table existence.

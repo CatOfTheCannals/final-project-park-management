@@ -1,0 +1,47 @@
+park_id,area_number,name,extension
+1,1,"Circuito Chico",50000
+1,2,"Tronador",100000
+1,3,"Isla Victoria",30000
+1,4,"Valle del Manso",80000
+2,1,"Garganta del Diablo",5000
+2,2,"Circuito Superior",10000
+2,3,"Circuito Inferior",8000
+2,4,"Isla San Martín",2000
+3,1,"Palmeral",5000
+3,2,"Río Uruguay",2000
+4,1,"Perito Moreno",100000
+4,2,"Upsala",150000
+4,3,"Cerro Chaltén",80000
+5,1,"Bahía Lapataia",20000
+5,2,"Lago Roca",15000
+6,1,"Cañón de Talampaya",50000
+6,2,"Ciudad Perdida",30000
+7,1,"Potrero de la Aguada",20000
+7,2,"Sierra del Gigante",25000
+8,1,"Selva Pedemontana",25000
+8,2,"Selva Montana",30000
+9,1,"Selva de Yungas",20000
+9,2,"Río Popayán",15000
+10,1,"Valle Encantado",30000
+10,2,"Quebrada de Cajón",25000
+11,1,"Valle de Horcones",30000
+11,2,"Plaza de Mulas",20000
+12,1,"Laguna Iberá",50000
+12,2,"Esteros del Iberá",70000
+13,1,"Sector Santa Rosa",5000
+13,2,"Sector San Juan",4000
+14,1,"Isla El Chapetón",2000
+14,2,"Isla Los Mellados",1500
+15,1,"Bosque Chaqueño",3000
+15,2,"Quebradas",1500
+16,1,"Sierra de la Ventana",4000
+16,2,"Cerro Tres Picos",2000
+17,1,"Bañados del Río Dulce",40000
+17,2,"Costa de la Laguna",30000
+18,1,"Punta Norte",80000
+18,2,"Caleta Valdés",70000
+18,3,"Puerto Pirámides",50000
+19,1,"Caldenal",5000
+19,2,"Salitral",2000
+20,1,"Bañados Norte",5000
+20,2,"Bañados Sur",4000

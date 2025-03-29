@@ -1,0 +1,30 @@
+id,DNI,CUIL,name,address,phone_numbers,salary
+1,"P100001","20-100001-1","Carlos Gómez","Av. Rivadavia 1234, CABA","11-1234-5678",85000.00
+2,"P100002","27-100002-2","María Rodríguez","Calle San Martín 567, Mendoza","261-234-5678",82000.00
+3,"P100003","20-100003-3","Juan Pérez","Av. Colón 890, Córdoba","351-234-5678",83000.00
+4,"P100004","27-100004-4","Laura Fernández","Calle Mitre 123, Bariloche","294-234-5678",81000.00
+5,"P100005","20-100005-5","Roberto Sánchez","Av. Belgrano 456, Salta","387-234-5678",84000.00
+6,"P200001","20-200001-1","Miguel Torres","Calle Laprida 789, Mendoza","261-345-6789",75000.00
+7,"P200002","27-200002-2","Ana González","Av. San Martín 234, Bariloche","294-345-6789",76000.00
+8,"P200003","20-200003-3","Diego Martínez","Calle Belgrano 567, Puerto Iguazú","3757-34-5678",74000.00
+9,"P200004","27-200004-4","Lucía Díaz","Av. Córdoba 890, El Calafate","2902-34-5678",77000.00
+10,"P200005","20-200005-5","Fernando López","Calle San Lorenzo 123, Salta","387-345-6789",73000.00
+11,"P200006","27-200006-6","Valeria Romero","Av. Urquiza 456, Corrientes","379-345-6789",72000.00
+12,"P200007","20-200007-7","Martín Silva","Calle Alvear 789, San Luis","266-345-6789",71000.00
+13,"P200008","27-200008-8","Carolina Acosta","Av. Independencia 234, Córdoba","351-345-6789",78000.00
+14,"P300001","20-300001-1","Alejandro Molina","Calle Alem 567, CABA","11-456-7890",90000.00
+15,"P300002","27-300002-2","Gabriela Vargas","Av. Libertador 890, Mendoza","261-456-7890",92000.00
+16,"P300003","20-300003-3","Sebastián Ríos","Calle Sarmiento 123, Córdoba","351-456-7890",91000.00
+17,"P300004","27-300004-4","Natalia Pereyra","Av. Mitre 456, Bariloche","294-456-7890",93000.00
+18,"P300005","20-300005-5","Javier Gutiérrez","Calle Belgrano 789, Puerto Iguazú","3757-45-6789",94000.00
+19,"P300006","27-300006-6","Mariana Castro","Av. San Martín 234, El Calafate","2902-45-6789",95000.00
+20,"P300007","20-300007-7","Pablo Núñez","Calle Rivadavia 567, Salta","387-456-7890",96000.00
+21,"P300008","27-300008-8","Daniela Ortiz","Av. Corrientes 890, Corrientes","379-456-7890",97000.00
+22,"P400001","20-400001-1","Ricardo Medina","Calle Florida 123, CABA","11-567-8901",80000.00
+23,"P400002","27-400002-2","Silvia Rojas","Av. Las Heras 456, Mendoza","261-567-8901",79000.00
+24,"P400003","20-400003-3","Eduardo Paz","Calle Colón 789, Córdoba","351-567-8901",78000.00
+25,"P400004","27-400004-4","Cecilia Vega","Av. Bustillo 234, Bariloche","294-567-8901",77000.00
+26,"P400005","20-400005-5","Gustavo Campos","Calle Victoria 567, Puerto Iguazú","3757-56-7890",76000.00
+27,"P400006","27-400006-6","Marcela Flores","Av. Libertad 890, El Calafate","2902-56-7890",75000.00
+28,"P400007","20-400007-7","Hernán Soto","Calle Alberdi 123, Salta","387-567-8901",74000.00
+29,"P400008","27-400008-8","Verónica Ramos","Av. 9 de Julio 456, Corrientes","379-567-8901",73000.00

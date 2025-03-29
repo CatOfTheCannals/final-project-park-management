@@ -55,6 +55,16 @@ execute_sql "sql/analyze_table_sizes.sql" "table size analysis"
 # Step 5: Analyze execution plans
 execute_sql "sql/analyze_execution_plans.sql" "execution plan analysis"
 
+# Step 6: Copy result files from /tmp to results directory
+echo -e "${YELLOW}Copying result files from /tmp to results directory...${NC}"
+cp /tmp/table_*.txt /tmp/fr*.txt /tmp/ar*.txt /tmp/indexes_*.txt results/
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Result files copied successfully${NC}"
+else
+    echo -e "${RED}✗ Error copying result files${NC}"
+    exit 1
+fi
+
 # Step 6: Run tests (optional)
 echo -e "${YELLOW}Do you want to run the tests? (y/n)${NC}"
 read run_tests

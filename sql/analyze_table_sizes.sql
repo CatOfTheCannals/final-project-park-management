@@ -2,9 +2,8 @@
 -- Outputs results to files for better analysis
 USE park_management;
 
--- Create results directory if it doesn't exist
--- Note: MySQL user needs FILE privilege and write access to this directory
-SET @results_dir = './results';
+-- Note: Using /tmp directory for output files to avoid permission issues
+-- MySQL user needs FILE privilege
 
 -- Get table sizes in MB
 SELECT 
@@ -19,7 +18,7 @@ WHERE
     table_schema = 'park_management'
 ORDER BY 
     (data_length + index_length) DESC
-INTO OUTFILE './results/table_sizes.txt';
+INTO OUTFILE '/tmp/table_sizes.txt';
 
 -- Get detailed information about each table
 SELECT 
@@ -30,7 +29,7 @@ WHERE
     table_schema = 'park_management'
 ORDER BY 
     table_name
-INTO OUTFILE './results/table_list.txt';
+INTO OUTFILE '/tmp/table_list.txt';
 
 -- Count rows in each table
 SELECT 'provinces' AS 'Table', COUNT(*) AS 'Row Count' FROM provinces
@@ -76,7 +75,7 @@ UNION ALL
 SELECT 'visitor_excursions', COUNT(*) FROM visitor_excursions
 ORDER BY 
     `Row Count` DESC
-INTO OUTFILE './results/table_row_counts.txt';
+INTO OUTFILE '/tmp/table_row_counts.txt';
 
 -- Get column information for each table
 SELECT 
@@ -93,4 +92,4 @@ WHERE
     TABLE_SCHEMA = 'park_management'
 ORDER BY 
     TABLE_NAME, ORDINAL_POSITION
-INTO OUTFILE './results/table_columns.txt';
+INTO OUTFILE '/tmp/table_columns.txt';

@@ -135,6 +135,7 @@ class TestFunctionalRequirements(TestCase):
             SELECT p.name, COUNT(pp.park_id) AS park_count
             FROM provinces p
             JOIN park_provinces pp ON p.id = pp.province_id
+            WHERE p.name LIKE 'Test%'  -- Only consider test provinces
             GROUP BY p.id, p.name
             ORDER BY park_count DESC
             LIMIT 1;
@@ -142,16 +143,16 @@ class TestFunctionalRequirements(TestCase):
         result = self.cursor.fetchone()
 
         self.assertIsNotNone(result, "Query returned no result")
-        self.assertEqual(result['name'], 'Cordoba', "Province with most parks is not Cordoba")
-        self.assertEqual(result['park_count'], 2, "Park count for Cordoba should be 2")
+        self.assertEqual(result['name'], 'Test Cordoba', "Province with most parks is not Test Cordoba")
+        self.assertEqual(result['park_count'], 2, "Park count for Test Cordoba should be 2")
 
     def test_02_identify_vegetal_species_in_at_least_half_of_parks(self):
         """Test Func Req 2: Identify vegetal species found in at least half of the parks."""
         # Total parks = 3. Half = 1.5. Need species in >= 2 parks.
         # Plantus communis is in A, B, C (3 parks). Plantus rarus is only in A (1 park).
         self.cursor.execute("""
-            SELECT COUNT(DISTINCT id) as total_parks FROM parks;
-        """)
+            SELECT COUNT(DISTINCT id) as total_parks FROM parks WHERE id IN (%s, %s, %s);
+        """, (self.park_a_id, self.park_b_id, self.park_c_id))
         total_parks = self.cursor.fetchone()['total_parks']
         min_parks_required = (total_parks / 2.0)
 
@@ -160,9 +161,10 @@ class TestFunctionalRequirements(TestCase):
             FROM natural_elements ne
             JOIN vegetal_elements ve ON ne.id = ve.element_id -- Only vegetal
             JOIN area_elements ae ON ne.id = ae.element_id
+            WHERE ae.park_id IN (%s, %s, %s)
             GROUP BY ne.id, ne.scientific_name
             HAVING park_count >= %s;
-        """, (min_parks_required,))
+        """, (self.park_a_id, self.park_b_id, self.park_c_id, min_parks_required))
         results = self.cursor.fetchall()
 
         self.assertEqual(len(results), 1, "Expected 1 species to be in at least half the parks")
@@ -240,16 +242,18 @@ class TestFunctionalRequirements(TestCase):
         """Test Additional Req 3: Identify species found in all parks."""
         # Setup: Plantus communis is in A, B, C (all 3 parks).
         # Plantus rarus is only in A. Animalia familiaris is only in C.
-        self.cursor.execute("SELECT COUNT(DISTINCT id) FROM parks;")
+        self.cursor.execute("SELECT COUNT(DISTINCT id) FROM parks WHERE id IN (%s, %s, %s);", 
+                           (self.park_a_id, self.park_b_id, self.park_c_id))
         total_parks = self.cursor.fetchone()['COUNT(DISTINCT id)']
 
         self.cursor.execute("""
             SELECT ne.scientific_name
             FROM natural_elements ne
             JOIN area_elements ae ON ne.id = ae.element_id
+            WHERE ae.park_id IN (%s, %s, %s)
             GROUP BY ne.id, ne.scientific_name
             HAVING COUNT(DISTINCT ae.park_id) = %s;
-        """, (total_parks,))
+        """, (self.park_a_id, self.park_b_id, self.park_c_id, total_parks))
         results = self.cursor.fetchall()
 
         self.assertEqual(len(results), 1, "Expected exactly one species to be in all parks")
@@ -263,9 +267,10 @@ class TestFunctionalRequirements(TestCase):
             SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count
             FROM natural_elements ne
             JOIN area_elements ae ON ne.id = ae.element_id
+            WHERE ae.park_id IN (%s, %s, %s)
             GROUP BY ne.id, ne.scientific_name
             HAVING park_count = 1;
-        """)
+        """, (self.park_a_id, self.park_b_id, self.park_c_id))
         results = self.cursor.fetchall()
         species_in_one_park = {row['scientific_name'] for row in results}
 

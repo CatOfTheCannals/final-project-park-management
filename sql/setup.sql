@@ -116,8 +116,7 @@ BEGIN
     IF is_vegetal > 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Vegetals cannot feed on other elements (element_food).';
     END IF;
-END;
-//
+END //
 
 CREATE TRIGGER check_element_food_before_update
 BEFORE UPDATE ON element_food
@@ -143,8 +142,7 @@ BEGIN
     IF is_vegetal > 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Constraint violation: Vegetals cannot feed on other elements (element_food).';
     END IF;
-END;
-//
+END //
 
 DELIMITER ;
 
@@ -275,8 +273,7 @@ BEGIN
         INSERT INTO email_log (park_email, element_scientific_name, old_count, new_count)
         VALUES (park_contact_email, element_name, OLD.number_of_individuals, NEW.number_of_individuals);
     END IF;
-END;
-//
+END //
 DELIMITER ;
 
 -- Stored Procedure (Additional Req 6 - Skeleton)
@@ -301,6 +298,5 @@ BEGIN
 
     -- Add more comparisons for columns, indexes, constraints etc.
 
-END;
-//
+END //
 DELIMITER ;

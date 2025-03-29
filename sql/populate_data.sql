@@ -65,12 +65,12 @@ INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALU
 -- =============================================
 -- Get province IDs - using SET to avoid output in console
 SET @ba_id = (SELECT id FROM provinces WHERE name = 'Buenos Aires');
-SET @ca_id = (SELECT id FROM provinces WHERE name = 'Catamarca');
-SET @ch_id = (SELECT id FROM provinces WHERE name = 'Chaco');
+SET @catamarca_id = (SELECT id FROM provinces WHERE name = 'Catamarca');
+SET @chaco_id = (SELECT id FROM provinces WHERE name = 'Chaco');
 SET @ct_id = (SELECT id FROM provinces WHERE name = 'Chubut');
 SET @co_id = (SELECT id FROM provinces WHERE name = 'Córdoba');
 SET @cr_id = (SELECT id FROM provinces WHERE name = 'Corrientes');
-SET @er_id = (SELECT id FROM provinces WHERE name = 'Entre Ríos');
+SET @entre_rios_id = (SELECT id FROM provinces WHERE name = 'Entre Ríos');
 SET @ju_id = (SELECT id FROM provinces WHERE name = 'Jujuy');
 SET @lp_id = (SELECT id FROM provinces WHERE name = 'La Pampa');
 SET @lr_id = (SELECT id FROM provinces WHERE name = 'La Rioja');
@@ -95,14 +95,14 @@ SET @lg_id = (SELECT id FROM parks WHERE code = 'LG');
 SET @tf_park_id = (SELECT id FROM parks WHERE code = 'TF');
 SET @ta_id = (SELECT id FROM parks WHERE code = 'TA');
 SET @sq_id = (SELECT id FROM parks WHERE code = 'SQ');
-SET @ca_id = (SELECT id FROM parks WHERE code = 'CA');
-SET @er_id = (SELECT id FROM parks WHERE code = 'ER');
+SET @calilegua_id = (SELECT id FROM parks WHERE code = 'CA');
+SET @el_rey_id = (SELECT id FROM parks WHERE code = 'ER');
 SET @lc_id = (SELECT id FROM parks WHERE code = 'LC');
 SET @ac_id = (SELECT id FROM parks WHERE code = 'AC');
 SET @ib_id = (SELECT id FROM parks WHERE code = 'IB');
 SET @pi_id = (SELECT id FROM parks WHERE code = 'PI');
 SET @is_id = (SELECT id FROM parks WHERE code = 'IS');
-SET @ch_id = (SELECT id FROM parks WHERE code = 'CH');
+SET @chancani_id = (SELECT id FROM parks WHERE code = 'CH');
 SET @et_id = (SELECT id FROM parks WHERE code = 'ET');
 SET @lm_id = (SELECT id FROM parks WHERE code = 'LM');
 SET @pv_id = (SELECT id FROM parks WHERE code = 'PV');
@@ -115,20 +115,20 @@ INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES
 (@nh_id, @rn_id, 500000), -- Nahuel Huapi in Rio Negro
 (@nh_id, @ne_id, 217261), -- Nahuel Huapi in Neuquén (shared)
 (@ig_id, @mi_id, 67620),  -- Iguazú in Misiones
-(@ep_id, @er_id, 8500),   -- El Palmar in Entre Ríos
+(@ep_id, @entre_rios_id, 8500),   -- El Palmar in Entre Ríos
 (@lg_id, @sc_id, 726927), -- Los Glaciares in Santa Cruz
 (@tf_park_id, @tf_id, 68909), -- Tierra del Fuego in Tierra del Fuego
 (@ta_id, @lr_id, 215000), -- Talampaya in La Rioja
 (@sq_id, @sl_id, 73785),  -- Sierra de las Quijadas in San Luis
-(@ca_id, @ju_id, 76306),  -- Calilegua in Jujuy
-(@er_id, @sa_id, 44162),  -- El Rey in Salta
+(@calilegua_id, @ju_id, 76306),  -- Calilegua in Jujuy
+(@el_rey_id, @sa_id, 44162),  -- El Rey in Salta
 (@lc_id, @sa_id, 64117),  -- Los Cardones in Salta
 -- Provincial Parks
 (@ac_id, @me_id, 71000),  -- Aconcagua in Mendoza
 (@ib_id, @cr_id, 159800), -- Iberá in Corrientes
 (@pi_id, @ba_id, 10248),  -- Pereyra Iraola in Buenos Aires
 (@is_id, @sf_id, 4096),   -- Islas de Santa Fe in Santa Fe
-(@ch_id, @co_id, 4920),   -- Chancaní in Córdoba
+(@chancani_id, @co_id, 4920),   -- Chancaní in Córdoba
 (@et_id, @ba_id, 6700),   -- Ernesto Tornquist in Buenos Aires
 (@lm_id, @co_id, 80000),  -- Laguna de Mar Chiquita in Córdoba
 (@pv_id, @ct_id, 360000), -- Península Valdés in Chubut
@@ -167,11 +167,11 @@ INSERT INTO park_areas (park_id, area_number, name, extension) VALUES
 (@sq_id, 1, 'Potrero de la Aguada', 20000),
 (@sq_id, 2, 'Sierra del Gigante', 25000),
 -- Calilegua areas
-(@ca_id, 1, 'Selva Pedemontana', 25000),
-(@ca_id, 2, 'Selva Montana', 30000),
+(@calilegua_id, 1, 'Selva Pedemontana', 25000),
+(@calilegua_id, 2, 'Selva Montana', 30000),
 -- El Rey areas
-(@er_id, 1, 'Selva de Yungas', 20000),
-(@er_id, 2, 'Río Popayán', 15000),
+(@el_rey_id, 1, 'Selva de Yungas', 20000),
+(@el_rey_id, 2, 'Río Popayán', 15000),
 -- Los Cardones areas
 (@lc_id, 1, 'Valle Encantado', 30000),
 (@lc_id, 2, 'Quebrada de Cajón', 25000),
@@ -188,8 +188,8 @@ INSERT INTO park_areas (park_id, area_number, name, extension) VALUES
 (@is_id, 1, 'Isla El Chapetón', 2000),
 (@is_id, 2, 'Isla Los Mellados', 1500),
 -- Chancaní areas
-(@ch_id, 1, 'Bosque Chaqueño', 3000),
-(@ch_id, 2, 'Quebradas', 1500),
+(@chancani_id, 1, 'Bosque Chaqueño', 3000),
+(@chancani_id, 2, 'Quebradas', 1500),
 -- Ernesto Tornquist areas
 (@et_id, 1, 'Sierra de la Ventana', 4000),
 (@et_id, 2, 'Cerro Tres Picos', 2000),
@@ -364,6 +364,7 @@ INSERT INTO mineral_elements (element_id, crystal_or_rock) VALUES
 DELIMITER //
 CREATE FUNCTION random_individuals(min_val INT, max_val INT) 
 RETURNS INT
+DETERMINISTIC
 BEGIN
     RETURN FLOOR(min_val + RAND() * (max_val - min_val));
 END //
@@ -654,7 +655,7 @@ INSERT INTO conservation_personnel (personnel_id, specialty, park_id, area_numbe
 ((SELECT id FROM personnel WHERE DNI = 'P400004'), 'Monitoreo de Calidad de Agua', @tf_park_id, 1),
 ((SELECT id FROM personnel WHERE DNI = 'P400005'), 'Prevención de Incendios', @ta_id, 1),
 ((SELECT id FROM personnel WHERE DNI = 'P400006'), 'Educación Ambiental', @sq_id, 1),
-((SELECT id FROM personnel WHERE DNI = 'P400007'), 'Reforestación', @ca_id, 1),
+((SELECT id FROM personnel WHERE DNI = 'P400007'), 'Reforestación', @calilegua_id, 1),
 ((SELECT id FROM personnel WHERE DNI = 'P400008'), 'Conservación de Humedales', @ib_id, 1);
 
 -- =============================================

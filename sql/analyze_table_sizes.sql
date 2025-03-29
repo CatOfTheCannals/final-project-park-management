@@ -1,4 +1,5 @@
 -- Script to analyze table sizes in the park_management database
+-- Outputs results to files for better analysis
 USE park_management;
 
 -- Get table sizes in MB
@@ -13,7 +14,8 @@ FROM
 WHERE 
     table_schema = 'park_management'
 ORDER BY 
-    (data_length + index_length) DESC;
+    (data_length + index_length) DESC
+INTO OUTFILE '/tmp/table_sizes.txt';
 
 -- Get detailed information about each table
 SELECT 
@@ -23,7 +25,8 @@ FROM
 WHERE 
     table_schema = 'park_management'
 ORDER BY 
-    table_name;
+    table_name
+INTO OUTFILE '/tmp/table_list.txt';
 
 -- Count rows in each table
 SELECT 'provinces' AS 'Table', COUNT(*) AS 'Row Count' FROM provinces
@@ -68,4 +71,22 @@ SELECT 'accommodation_excursions', COUNT(*) FROM accommodation_excursions
 UNION ALL
 SELECT 'visitor_excursions', COUNT(*) FROM visitor_excursions
 ORDER BY 
-    `Row Count` DESC;
+    `Row Count` DESC
+INTO OUTFILE '/tmp/table_row_counts.txt';
+
+-- Get column information for each table
+SELECT 
+    TABLE_NAME as 'Table',
+    COLUMN_NAME as 'Column',
+    COLUMN_TYPE as 'Type',
+    IS_NULLABLE as 'Nullable',
+    COLUMN_KEY as 'Key',
+    COLUMN_DEFAULT as 'Default',
+    EXTRA as 'Extra'
+FROM 
+    information_schema.COLUMNS
+WHERE 
+    TABLE_SCHEMA = 'park_management'
+ORDER BY 
+    TABLE_NAME, ORDINAL_POSITION
+INTO OUTFILE '/tmp/table_columns.txt';

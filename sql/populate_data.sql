@@ -479,10 +479,9 @@ INSERT INTO area_elements (park_id, area_number, element_id, number_of_individua
 INSERT INTO area_elements (park_id, area_number, element_id, number_of_individuals) VALUES
 (@ib_id, 1, @aguara_id, random_individuals(20, 40)),
 (@ib_id, 1, @lobito_id, random_individuals(50, 100)),
-(@ib_id, 1, @carpincho_id, random_individuals(200, 400)),
+(@ib_id, 1, @gatomontes_id, random_individuals(200, 400)),
 (@ib_id, 2, @aguara_id, random_individuals(15, 30)),
-(@ib_id, 2, @yacare_id, random_individuals(100, 200)),
-(@ib_id, 2, @carpincho_id, random_individuals(150, 300));
+(@ib_id, 2, @gatomontes_id, random_individuals(150, 300));
 
 -- Add more elements to other parks to ensure good distribution for queries
 -- Make sure some elements appear in many parks (for "at least half" query)

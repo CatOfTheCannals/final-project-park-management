@@ -4,12 +4,21 @@ This document outlines the remaining tasks to finalize the BBDD final project.
 
 ## 1. Populate Database with Sample Data
 
-*   **Goal:** Add a small but representative set of artificial data beyond the minimal test setup data. This helps in demonstrating functionality and performing basic performance analysis (e.g., using `EXPLAIN` for queries).
+*   **Goal:** Add a substantial and interconnected set of artificial data to enable meaningful demonstrations and performance analysis (e.g., using `EXPLAIN` for queries).
 *   **Action:**
-    *   Create a new file `sql/populate_data.sql`.
-    *   Add `INSERT` statements for key tables like `provinces`, `parks`, `park_provinces`, `park_areas`, `natural_elements`, `vegetal_elements`, `animal_elements`, `area_elements`, `personnel`, `visitors`, `accommodations`, `excursions`, etc. Aim for ~5-10 realistic entries per table where applicable. Use data inspired by, but distinct from, the `data/*.csv` files.
-    *   Ensure the data allows for meaningful results from the required functional queries.
-*   **Definition of Done:** `sql/populate_data.sql` exists and can be run after `sql/setup.sql` to populate the database with sample data.
+    *   Modify the existing `sql/populate_data.sql` script.
+    *   **Leverage CSV Data:** Use province names from `data/areas_protegidas_nacionales_y_provinciales_por_jurisdiccion.csv` as a base for the `provinces` table. Use species group information from `data/representatividad_de_las_especies_en_areas_protegidas_nacionales.csv` to inspire the types of `natural_elements` created. Use visitor statistics from `data/visitantes_registrados_en_los_parques_nacionales.csv` to guide the scale of visitor data. Invent park names, personnel details, accommodation specifics, etc., as required by the assignment guidelines ("invent data that is not contained in the source files").
+    *   **Scale:** Aim for approximately 100 rows in major tables like `personnel`, `visitors`, `natural_elements`, and `area_elements`. Adjust counts for other tables logically (e.g., fewer `parks` than `areas`, fewer `provinces` than `parks`).
+    *   **Interconnectivity:** Ensure data integrity and realistic relationships:
+        *   Link `park_provinces` correctly to `parks` and `provinces`.
+        *   Assign `park_areas` to existing `parks`.
+        *   Place `natural_elements` within specific `park_areas` via `area_elements`.
+        *   Assign `personnel` subtypes (management, surveillance, etc.) and link them to relevant entities (entrances, areas, projects).
+        *   Place `visitors` in `accommodations` located within `parks`.
+        *   Link `visitors` and `accommodations` to `excursions`.
+        *   Create plausible `element_food` relationships between `animal_elements` and other non-mineral `natural_elements`.
+    *   **Functionality:** Ensure the generated data allows for meaningful results from all required functional queries (Func Reqs 1-3, Add Reqs 3-4).
+*   **Definition of Done:** `sql/populate_data.sql` is updated with ~100 interconnected rows per major table, leveraging CSV data where appropriate, and can be run after `sql/setup.sql`.
 
 ## 2. Create README Documentation
 

@@ -13,28 +13,28 @@ This project implements a database system for managing information about natural
 
 ## Database Setup
 
-1.  **Connect to MySQL:** Open a MySQL client connected to your server.
+1.  **Clean up any existing database:** Before setting up, it's recommended to run the teardown script first to avoid conflicts with previous installations:
     ```bash
-    # Example using mysql client (replace 'root' if using a different user)
-    mysql -u root -p
+    # Example using mysql client (enter password when prompted)
+    mysql -u root -p < sql/teardown.sql
     ```
-2.  **Run Setup Script:** Execute the `setup.sql` script to create the database (`park_management`) and all necessary tables, triggers, and procedures. Run this from the project's root directory.
+
+2.  **Run Setup Script:** Execute the `setup.sql` script to create the database (`park_management`) and all necessary tables, triggers, and procedures:
     ```bash
     # Example using mysql client (enter password when prompted)
     mysql -u root -p < sql/setup.sql
     ```
     *Note: This script includes `CREATE DATABASE IF NOT EXISTS park_management;` and `USE park_management;`.*
 
-## Populating Data (Optional but Recommended)
+## Populating Data (Required for Functional Tests)
 
 To populate the database with sample data for demonstration and query testing:
 
-1.  **Run Populate Script:** After running `setup.sql`, execute the `populate_data.sql` script.
+1.  **Run Populate Script:** After running `setup.sql`, execute the `populate_data.sql` script:
     ```bash
     # Example using mysql client (enter password when prompted)
-    mysql -u root -p park_management < sql/populate_data.sql
+    mysql -u root -p < sql/populate_data.sql
     ```
-    *Note: We specify the database name here because `populate_data.sql` assumes the database context is already set.*
 
 ## Running Tests
 
@@ -46,11 +46,20 @@ To verify the database schema, constraints, and functional requirements implemen
     ```
     All tests should pass if the database is set up correctly.
 
+2.  **Run Individual Test Files:** If you want to run specific tests:
+    ```bash
+    # Example: Run only the functional requirements tests
+    python -m unittest tests/test_functional_requirements.py
+    
+    # Example: Run only a specific data requirement test
+    python -m unittest tests/test_data_requirements/test_parks.py
+    ```
+
 ## Database Teardown
 
 To remove the database created by this project:
 
-1.  **Run Teardown Script:** Execute the `teardown.sql` script.
+1.  **Run Teardown Script:** Execute the `teardown.sql` script:
     ```bash
     # Example using mysql client (enter password when prompted)
     mysql -u root -p < sql/teardown.sql
@@ -71,3 +80,11 @@ To remove the database created by this project:
 *   `specifications.txt`: Consolidated list of requirements and their status.
 *   `next_steps.md`: Outline of final steps for completion.
 *   `README.md`: This file.
+
+## Troubleshooting
+
+If you encounter errors during setup or testing:
+
+1. **Duplicate entries or existing triggers:** Run the teardown script first, then setup again.
+2. **Foreign key constraint failures:** Ensure you're running the scripts in the correct order: teardown → setup → populate.
+3. **Test failures:** Check if the database was properly populated with sample data.

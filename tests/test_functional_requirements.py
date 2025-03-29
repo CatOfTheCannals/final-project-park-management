@@ -23,12 +23,12 @@ class TestFunctionalRequirements(TestCase):
         self.visitor_ids = []
 
         try:
-            # Provinces
-            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Buenos Aires', 'OPDS');")
+            # Provinces - use unique test names to avoid conflicts with populate_data.sql
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Test Buenos Aires', 'OPDS Test');")
             self.province_ids.append(self.cursor.lastrowid)
-            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Cordoba', 'Secretaria de Ambiente');")
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Test Cordoba', 'Secretaria de Ambiente Test');")
             self.province_ids.append(self.cursor.lastrowid)
-            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Santa Fe', 'Ministerio de Ambiente');")
+            self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('Test Santa Fe', 'Ministerio de Ambiente Test');")
             self.province_ids.append(self.cursor.lastrowid)
             self.province_ba_id, self.province_co_id, self.province_sf_id = self.province_ids
 

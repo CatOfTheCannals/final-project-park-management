@@ -63,51 +63,51 @@ INSERT INTO parks (name, declaration_date, contact_email, code, total_area) VALU
 -- =============================================
 -- PARK PROVINCES (Link parks to provinces)
 -- =============================================
--- Get province IDs
-SELECT @ba_id := id FROM provinces WHERE name = 'Buenos Aires';
-SELECT @ca_id := id FROM provinces WHERE name = 'Catamarca';
-SELECT @ch_id := id FROM provinces WHERE name = 'Chaco';
-SELECT @ct_id := id FROM provinces WHERE name = 'Chubut';
-SELECT @co_id := id FROM provinces WHERE name = 'Córdoba';
-SELECT @cr_id := id FROM provinces WHERE name = 'Corrientes';
-SELECT @er_id := id FROM provinces WHERE name = 'Entre Ríos';
-SELECT @ju_id := id FROM provinces WHERE name = 'Jujuy';
-SELECT @lp_id := id FROM provinces WHERE name = 'La Pampa';
-SELECT @lr_id := id FROM provinces WHERE name = 'La Rioja';
-SELECT @me_id := id FROM provinces WHERE name = 'Mendoza';
-SELECT @mi_id := id FROM provinces WHERE name = 'Misiones';
-SELECT @ne_id := id FROM provinces WHERE name = 'Neuquén';
-SELECT @rn_id := id FROM provinces WHERE name = 'Río Negro';
-SELECT @sa_id := id FROM provinces WHERE name = 'Salta';
-SELECT @sj_id := id FROM provinces WHERE name = 'San Juan';
-SELECT @sl_id := id FROM provinces WHERE name = 'San Luis';
-SELECT @sc_id := id FROM provinces WHERE name = 'Santa Cruz';
-SELECT @sf_id := id FROM provinces WHERE name = 'Santa Fe';
-SELECT @se_id := id FROM provinces WHERE name = 'Santiago del Estero';
-SELECT @tf_id := id FROM provinces WHERE name = 'Tierra del Fuego';
-SELECT @tu_id := id FROM provinces WHERE name = 'Tucumán';
+-- Get province IDs - using SET to avoid output in console
+SET @ba_id = (SELECT id FROM provinces WHERE name = 'Buenos Aires');
+SET @ca_id = (SELECT id FROM provinces WHERE name = 'Catamarca');
+SET @ch_id = (SELECT id FROM provinces WHERE name = 'Chaco');
+SET @ct_id = (SELECT id FROM provinces WHERE name = 'Chubut');
+SET @co_id = (SELECT id FROM provinces WHERE name = 'Córdoba');
+SET @cr_id = (SELECT id FROM provinces WHERE name = 'Corrientes');
+SET @er_id = (SELECT id FROM provinces WHERE name = 'Entre Ríos');
+SET @ju_id = (SELECT id FROM provinces WHERE name = 'Jujuy');
+SET @lp_id = (SELECT id FROM provinces WHERE name = 'La Pampa');
+SET @lr_id = (SELECT id FROM provinces WHERE name = 'La Rioja');
+SET @me_id = (SELECT id FROM provinces WHERE name = 'Mendoza');
+SET @mi_id = (SELECT id FROM provinces WHERE name = 'Misiones');
+SET @ne_id = (SELECT id FROM provinces WHERE name = 'Neuquén');
+SET @rn_id = (SELECT id FROM provinces WHERE name = 'Río Negro');
+SET @sa_id = (SELECT id FROM provinces WHERE name = 'Salta');
+SET @sj_id = (SELECT id FROM provinces WHERE name = 'San Juan');
+SET @sl_id = (SELECT id FROM provinces WHERE name = 'San Luis');
+SET @sc_id = (SELECT id FROM provinces WHERE name = 'Santa Cruz');
+SET @sf_id = (SELECT id FROM provinces WHERE name = 'Santa Fe');
+SET @se_id = (SELECT id FROM provinces WHERE name = 'Santiago del Estero');
+SET @tf_id = (SELECT id FROM provinces WHERE name = 'Tierra del Fuego');
+SET @tu_id = (SELECT id FROM provinces WHERE name = 'Tucumán');
 
--- Get park IDs
-SELECT @nh_id := id FROM parks WHERE code = 'NH';
-SELECT @ig_id := id FROM parks WHERE code = 'IG';
-SELECT @ep_id := id FROM parks WHERE code = 'EP';
-SELECT @lg_id := id FROM parks WHERE code = 'LG';
-SELECT @tf_park_id := id FROM parks WHERE code = 'TF';
-SELECT @ta_id := id FROM parks WHERE code = 'TA';
-SELECT @sq_id := id FROM parks WHERE code = 'SQ';
-SELECT @ca_id := id FROM parks WHERE code = 'CA';
-SELECT @er_id := id FROM parks WHERE code = 'ER';
-SELECT @lc_id := id FROM parks WHERE code = 'LC';
-SELECT @ac_id := id FROM parks WHERE code = 'AC';
-SELECT @ib_id := id FROM parks WHERE code = 'IB';
-SELECT @pi_id := id FROM parks WHERE code = 'PI';
-SELECT @is_id := id FROM parks WHERE code = 'IS';
-SELECT @ch_id := id FROM parks WHERE code = 'CH';
-SELECT @et_id := id FROM parks WHERE code = 'ET';
-SELECT @lm_id := id FROM parks WHERE code = 'LM';
-SELECT @pv_id := id FROM parks WHERE code = 'PV';
-SELECT @pl_id := id FROM parks WHERE code = 'PL';
-SELECT @rd_id := id FROM parks WHERE code = 'RD';
+-- Get park IDs - using SET to avoid output in console
+SET @nh_id = (SELECT id FROM parks WHERE code = 'NH');
+SET @ig_id = (SELECT id FROM parks WHERE code = 'IG');
+SET @ep_id = (SELECT id FROM parks WHERE code = 'EP');
+SET @lg_id = (SELECT id FROM parks WHERE code = 'LG');
+SET @tf_park_id = (SELECT id FROM parks WHERE code = 'TF');
+SET @ta_id = (SELECT id FROM parks WHERE code = 'TA');
+SET @sq_id = (SELECT id FROM parks WHERE code = 'SQ');
+SET @ca_id = (SELECT id FROM parks WHERE code = 'CA');
+SET @er_id = (SELECT id FROM parks WHERE code = 'ER');
+SET @lc_id = (SELECT id FROM parks WHERE code = 'LC');
+SET @ac_id = (SELECT id FROM parks WHERE code = 'AC');
+SET @ib_id = (SELECT id FROM parks WHERE code = 'IB');
+SET @pi_id = (SELECT id FROM parks WHERE code = 'PI');
+SET @is_id = (SELECT id FROM parks WHERE code = 'IS');
+SET @ch_id = (SELECT id FROM parks WHERE code = 'CH');
+SET @et_id = (SELECT id FROM parks WHERE code = 'ET');
+SET @lm_id = (SELECT id FROM parks WHERE code = 'LM');
+SET @pv_id = (SELECT id FROM parks WHERE code = 'PV');
+SET @pl_id = (SELECT id FROM parks WHERE code = 'PL');
+SET @rd_id = (SELECT id FROM parks WHERE code = 'RD');
 
 -- Link parks to provinces
 INSERT INTO park_provinces (park_id, province_id, extension_in_province) VALUES
@@ -369,46 +369,46 @@ BEGIN
 END //
 DELIMITER ;
 
--- Get element IDs for distribution
-SELECT @jaguar_id := id FROM natural_elements WHERE scientific_name = 'Panthera onca';
-SELECT @puma_id := id FROM natural_elements WHERE scientific_name = 'Puma concolor';
-SELECT @huemul_id := id FROM natural_elements WHERE scientific_name = 'Hippocamelus bisulcus';
-SELECT @guanaco_id := id FROM natural_elements WHERE scientific_name = 'Lama guanicoe';
-SELECT @hormiguero_id := id FROM natural_elements WHERE scientific_name = 'Myrmecophaga tridactyla';
-SELECT @tapir_id := id FROM natural_elements WHERE scientific_name = 'Tapirus terrestris';
-SELECT @aguara_id := id FROM natural_elements WHERE scientific_name = 'Chrysocyon brachyurus';
-SELECT @lobito_id := id FROM natural_elements WHERE scientific_name = 'Lontra longicaudis';
-SELECT @gatomontes_id := id FROM natural_elements WHERE scientific_name = 'Leopardus geoffroyi';
-SELECT @mara_id := id FROM natural_elements WHERE scientific_name = 'Dolichotis patagonum';
-SELECT @condor_id := id FROM natural_elements WHERE scientific_name = 'Vultur gryphus';
-SELECT @nandu_id := id FROM natural_elements WHERE scientific_name = 'Rhea americana';
-SELECT @flamenco_id := id FROM natural_elements WHERE scientific_name = 'Phoenicopterus chilensis';
-SELECT @martineta_id := id FROM natural_elements WHERE scientific_name = 'Eudromia elegans';
-SELECT @loro_id := id FROM natural_elements WHERE scientific_name = 'Cyanoliseus patagonus';
-SELECT @cardenal_id := id FROM natural_elements WHERE scientific_name = 'Gubernatrix cristata';
-SELECT @pinguino_id := id FROM natural_elements WHERE scientific_name = 'Spheniscus magellanicus';
-SELECT @aguila_id := id FROM natural_elements WHERE scientific_name = 'Harpia harpyja';
-SELECT @guacamayo_id := id FROM natural_elements WHERE scientific_name = 'Ara chloropterus';
-SELECT @tucan_id := id FROM natural_elements WHERE scientific_name = 'Ramphastos toco';
+-- Get element IDs for distribution - using SET to avoid output in console
+SET @jaguar_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Panthera onca');
+SET @puma_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Puma concolor');
+SET @huemul_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Hippocamelus bisulcus');
+SET @guanaco_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Lama guanicoe');
+SET @hormiguero_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Myrmecophaga tridactyla');
+SET @tapir_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Tapirus terrestris');
+SET @aguara_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Chrysocyon brachyurus');
+SET @lobito_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Lontra longicaudis');
+SET @gatomontes_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Leopardus geoffroyi');
+SET @mara_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Dolichotis patagonum');
+SET @condor_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Vultur gryphus');
+SET @nandu_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Rhea americana');
+SET @flamenco_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Phoenicopterus chilensis');
+SET @martineta_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Eudromia elegans');
+SET @loro_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Cyanoliseus patagonus');
+SET @cardenal_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Gubernatrix cristata');
+SET @pinguino_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Spheniscus magellanicus');
+SET @aguila_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Harpia harpyja');
+SET @guacamayo_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Ara chloropterus');
+SET @tucan_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Ramphastos toco');
 
 -- Plant IDs
-SELECT @pehuen_id := id FROM natural_elements WHERE scientific_name = 'Araucaria araucana';
-SELECT @calden_id := id FROM natural_elements WHERE scientific_name = 'Prosopis caldenia';
-SELECT @cipres_id := id FROM natural_elements WHERE scientific_name = 'Austrocedrus chilensis';
-SELECT @lenga_id := id FROM natural_elements WHERE scientific_name = 'Nothofagus pumilio';
-SELECT @nire_id := id FROM natural_elements WHERE scientific_name = 'Nothofagus antarctica';
-SELECT @algarrobo_id := id FROM natural_elements WHERE scientific_name = 'Prosopis flexuosa';
-SELECT @quebracho_id := id FROM natural_elements WHERE scientific_name = 'Schinopsis balansae';
-SELECT @paloborracho_id := id FROM natural_elements WHERE scientific_name = 'Ceiba chodatii';
-SELECT @lapacho_id := id FROM natural_elements WHERE scientific_name = 'Handroanthus impetiginosus';
-SELECT @alerce_id := id FROM natural_elements WHERE scientific_name = 'Fitzroya cupressoides';
+SET @pehuen_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Araucaria araucana');
+SET @calden_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Prosopis caldenia');
+SET @cipres_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Austrocedrus chilensis');
+SET @lenga_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Nothofagus pumilio');
+SET @nire_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Nothofagus antarctica');
+SET @algarrobo_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Prosopis flexuosa');
+SET @quebracho_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Schinopsis balansae');
+SET @paloborracho_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Ceiba chodatii');
+SET @lapacho_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Handroanthus impetiginosus');
+SET @alerce_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Fitzroya cupressoides');
 
 -- Mineral IDs
-SELECT @quartz_id := id FROM natural_elements WHERE scientific_name = 'Quartz';
-SELECT @granite_id := id FROM natural_elements WHERE scientific_name = 'Granite';
-SELECT @calcite_id := id FROM natural_elements WHERE scientific_name = 'Calcite';
-SELECT @rhodochrosite_id := id FROM natural_elements WHERE scientific_name = 'Rhodochrosite';
-SELECT @basalt_id := id FROM natural_elements WHERE scientific_name = 'Basalt';
+SET @quartz_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Quartz');
+SET @granite_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Granite');
+SET @calcite_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Calcite');
+SET @rhodochrosite_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Rhodochrosite');
+SET @basalt_id = (SELECT id FROM natural_elements WHERE scientific_name = 'Basalt');
 
 -- Distribute elements across areas
 -- Nahuel Huapi (Patagonia)
@@ -597,17 +597,17 @@ INSERT INTO research_projects (budget, duration, element_id) VALUES
 (190000.00, '18 months', @guanaco_id), -- Guanaco population dynamics
 (230000.00, '24 months', @pinguino_id); -- Penguin breeding success
 
--- Get project IDs
-SELECT @jaguar_project_id := id FROM research_projects WHERE element_id = @jaguar_id;
-SELECT @puma_project_id := id FROM research_projects WHERE element_id = @puma_id;
-SELECT @huemul_project_id := id FROM research_projects WHERE element_id = @huemul_id;
-SELECT @condor_project_id := id FROM research_projects WHERE element_id = @condor_id;
-SELECT @lenga_project_id := id FROM research_projects WHERE element_id = @lenga_id;
-SELECT @alerce_project_id := id FROM research_projects WHERE element_id = @alerce_id;
-SELECT @lapacho_project_id := id FROM research_projects WHERE element_id = @lapacho_id;
-SELECT @tapir_project_id := id FROM research_projects WHERE element_id = @tapir_id;
-SELECT @guanaco_project_id := id FROM research_projects WHERE element_id = @guanaco_id;
-SELECT @pinguino_project_id := id FROM research_projects WHERE element_id = @pinguino_id;
+-- Get project IDs - using SET to avoid output in console
+SET @jaguar_project_id = (SELECT id FROM research_projects WHERE element_id = @jaguar_id);
+SET @puma_project_id = (SELECT id FROM research_projects WHERE element_id = @puma_id);
+SET @huemul_project_id = (SELECT id FROM research_projects WHERE element_id = @huemul_id);
+SET @condor_project_id = (SELECT id FROM research_projects WHERE element_id = @condor_id);
+SET @lenga_project_id = (SELECT id FROM research_projects WHERE element_id = @lenga_id);
+SET @alerce_project_id = (SELECT id FROM research_projects WHERE element_id = @alerce_id);
+SET @lapacho_project_id = (SELECT id FROM research_projects WHERE element_id = @lapacho_id);
+SET @tapir_project_id = (SELECT id FROM research_projects WHERE element_id = @tapir_id);
+SET @guanaco_project_id = (SELECT id FROM research_projects WHERE element_id = @guanaco_id);
+SET @pinguino_project_id = (SELECT id FROM research_projects WHERE element_id = @pinguino_id);
 
 -- =============================================
 -- PERSONNEL SUBTYPES
@@ -700,33 +700,33 @@ INSERT INTO excursions (day_of_week, time, type) VALUES
 ('Sunday', '13:30:00', 'vehicle'),
 ('Sunday', '15:30:00', 'vehicle');
 
--- Get accommodation IDs
-SELECT @cabana_std_id := id FROM accommodations WHERE category = 'Cabaña Estándar';
-SELECT @hab_doble_id := id FROM accommodations WHERE category = 'Habitación Doble';
-SELECT @cabana_fam_id := id FROM accommodations WHERE category = 'Cabaña Familiar';
-SELECT @cabana_grande_id := id FROM accommodations WHERE category = 'Cabaña Grande';
-SELECT @hab_matrim_id := id FROM accommodations WHERE category = 'Habitación Matrimonial';
-SELECT @suite_id := id FROM accommodations WHERE category = 'Suite';
-SELECT @albergue_id := id FROM accommodations WHERE category = 'Albergue';
-SELECT @hab_triple_id := id FROM accommodations WHERE category = 'Habitación Triple';
-SELECT @cabana_med_id := id FROM accommodations WHERE category = 'Cabaña Mediana';
-SELECT @dorm_comp_id := id FROM accommodations WHERE category = 'Dormitorio Compartido';
+-- Get accommodation IDs - using SET to avoid output in console
+SET @cabana_std_id = (SELECT id FROM accommodations WHERE category = 'Cabaña Estándar');
+SET @hab_doble_id = (SELECT id FROM accommodations WHERE category = 'Habitación Doble');
+SET @cabana_fam_id = (SELECT id FROM accommodations WHERE category = 'Cabaña Familiar');
+SET @cabana_grande_id = (SELECT id FROM accommodations WHERE category = 'Cabaña Grande');
+SET @hab_matrim_id = (SELECT id FROM accommodations WHERE category = 'Habitación Matrimonial');
+SET @suite_id = (SELECT id FROM accommodations WHERE category = 'Suite');
+SET @albergue_id = (SELECT id FROM accommodations WHERE category = 'Albergue');
+SET @hab_triple_id = (SELECT id FROM accommodations WHERE category = 'Habitación Triple');
+SET @cabana_med_id = (SELECT id FROM accommodations WHERE category = 'Cabaña Mediana');
+SET @dorm_comp_id = (SELECT id FROM accommodations WHERE category = 'Dormitorio Compartido');
 
--- Get excursion IDs
-SELECT @exc_mon_am_id := id FROM excursions WHERE day_of_week = 'Monday' AND time = '09:00:00';
-SELECT @exc_mon_pm_id := id FROM excursions WHERE day_of_week = 'Monday' AND time = '14:00:00';
-SELECT @exc_tue_am_id := id FROM excursions WHERE day_of_week = 'Tuesday' AND time = '08:30:00';
-SELECT @exc_tue_pm_id := id FROM excursions WHERE day_of_week = 'Tuesday' AND time = '15:00:00';
-SELECT @exc_wed_am_id := id FROM excursions WHERE day_of_week = 'Wednesday' AND time = '09:30:00';
-SELECT @exc_wed_pm_id := id FROM excursions WHERE day_of_week = 'Wednesday' AND time = '13:30:00';
-SELECT @exc_sat_am1_id := id FROM excursions WHERE day_of_week = 'Saturday' AND time = '08:00:00';
-SELECT @exc_sat_am2_id := id FROM excursions WHERE day_of_week = 'Saturday' AND time = '10:00:00';
-SELECT @exc_sat_pm1_id := id FROM excursions WHERE day_of_week = 'Saturday' AND time = '14:00:00';
-SELECT @exc_sat_pm2_id := id FROM excursions WHERE day_of_week = 'Saturday' AND time = '16:00:00';
-SELECT @exc_sun_am1_id := id FROM excursions WHERE day_of_week = 'Sunday' AND time = '08:30:00';
-SELECT @exc_sun_am2_id := id FROM excursions WHERE day_of_week = 'Sunday' AND time = '10:30:00';
-SELECT @exc_sun_pm1_id := id FROM excursions WHERE day_of_week = 'Sunday' AND time = '13:30:00';
-SELECT @exc_sun_pm2_id := id FROM excursions WHERE day_of_week = 'Sunday' AND time = '15:30:00';
+-- Get excursion IDs - using SET to avoid output in console
+SET @exc_mon_am_id = (SELECT id FROM excursions WHERE day_of_week = 'Monday' AND time = '09:00:00');
+SET @exc_mon_pm_id = (SELECT id FROM excursions WHERE day_of_week = 'Monday' AND time = '14:00:00');
+SET @exc_tue_am_id = (SELECT id FROM excursions WHERE day_of_week = 'Tuesday' AND time = '08:30:00');
+SET @exc_tue_pm_id = (SELECT id FROM excursions WHERE day_of_week = 'Tuesday' AND time = '15:00:00');
+SET @exc_wed_am_id = (SELECT id FROM excursions WHERE day_of_week = 'Wednesday' AND time = '09:30:00');
+SET @exc_wed_pm_id = (SELECT id FROM excursions WHERE day_of_week = 'Wednesday' AND time = '13:30:00');
+SET @exc_sat_am1_id = (SELECT id FROM excursions WHERE day_of_week = 'Saturday' AND time = '08:00:00');
+SET @exc_sat_am2_id = (SELECT id FROM excursions WHERE day_of_week = 'Saturday' AND time = '10:00:00');
+SET @exc_sat_pm1_id = (SELECT id FROM excursions WHERE day_of_week = 'Saturday' AND time = '14:00:00');
+SET @exc_sat_pm2_id = (SELECT id FROM excursions WHERE day_of_week = 'Saturday' AND time = '16:00:00');
+SET @exc_sun_am1_id = (SELECT id FROM excursions WHERE day_of_week = 'Sunday' AND time = '08:30:00');
+SET @exc_sun_am2_id = (SELECT id FROM excursions WHERE day_of_week = 'Sunday' AND time = '10:30:00');
+SET @exc_sun_pm1_id = (SELECT id FROM excursions WHERE day_of_week = 'Sunday' AND time = '13:30:00');
+SET @exc_sun_pm2_id = (SELECT id FROM excursions WHERE day_of_week = 'Sunday' AND time = '15:30:00');
 
 -- =============================================
 -- ACCOMMODATION EXCURSIONS

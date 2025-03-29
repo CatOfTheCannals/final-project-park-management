@@ -4,6 +4,11 @@ CREATE DATABASE IF NOT EXISTS park_management CHARACTER SET utf8mb4 COLLATE utf8
 -- Use the created database
 USE park_management;
 
+-- Drop existing triggers to avoid errors on re-run
+DROP TRIGGER IF EXISTS check_element_food_before_insert;
+DROP TRIGGER IF EXISTS check_element_food_before_update;
+DROP TRIGGER IF EXISTS species_decrease_email;
+
 -- Create tables (copied and adapted from test_database_connection.py)
 CREATE TABLE IF NOT EXISTS provinces (
     id INT AUTO_INCREMENT PRIMARY KEY,

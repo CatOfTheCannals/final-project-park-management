@@ -97,6 +97,17 @@ chmod +x scripts/*.sh
 
 *Note on `local_infile`: If you cannot enable `local_infile` on the server or client, you must modify `sql/populate_data.sql` to remove the `LOCAL` keyword from `LOAD DATA LOCAL INFILE` commands. This requires placing the CSV files in a directory accessible *directly* by the MySQL server process (often restricted by `secure_file_priv`).*
 
+## Running Analysis
+
+After populating the database, you can run the analysis scripts to generate execution plans and table size reports:
+
+```bash
+./scripts/run_analysis.sh 
+```
+*(You will be prompted for the MySQL password)*
+
+This script executes `sql/analyze_table_sizes.sql` and `sql/analyze_execution_plans.sql`. Output files will be generated in the `/tmp/` directory (e.g., `/tmp/table_sizes.txt`, `/tmp/fr1_plan.json`). Ensure your MySQL user has the `FILE` privilege.
+
 ## Database Teardown
 
 To remove the database created by this project:

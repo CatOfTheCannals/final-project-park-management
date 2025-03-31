@@ -48,54 +48,54 @@ The `sql/populate_data.sql` script uses `LOAD DATA LOCAL INFILE` for efficient b
 
 *   When running the `mysql` command-line client to execute the SQL scripts, you **must** include the `--local-infile=1` flag.
 
-### 2. Running the Setup and Population Scripts
+### 2. Running Setup, Population, Tests, and Analysis
 
-The recommended way to set up and populate the database is using the provided shell script. This ensures the scripts are run in the correct order.
+We provide shell scripts to automate the common workflows. Ensure they are executable:
+```bash
+chmod +x scripts/*.sh
+```
 
-*   **Using the Script (Recommended):**
-    1.  Make the script executable (if you haven't already):
-        ```bash
-        chmod +x scripts/setup_database.sh
-        ```
-    2.  Run the script from the project's root directory:
-        ```bash
-        ./scripts/setup_database.sh
-        ```
-        You might be prompted for your MySQL root password multiple times.
-
-*   **Manual Execution:** If you prefer to run the commands manually, execute them from the project's root directory in this specific order:
+*   **Setup and Populate Database:** This script handles teardown, schema creation, and data loading. Run it from the project root:
     ```bash
-    # 1. Teardown (Optional but recommended for a clean slate)
+    ./scripts/setup_database.sh
+    ```
+    You will be prompted for your MySQL root password.
+
+*   **Run Unit Tests:** After setting up the database (you can run tests *before* or *after* populating), execute:
+    ```bash
+    ./scripts/run_tests.sh
+    ```
+    This runs all Python unit tests located in the `tests/` directory.
+
+*   **Run SQL Analysis:** After setting up and *populating* the database, run the analysis scripts:
+    ```bash
+    ./scripts/run_analysis.sh
+    ```
+    This executes `sql/analyze_table_sizes.sql` and `sql/analyze_execution_plans.sql`. You will be prompted for your MySQL root password. The output files (table sizes, execution plans in JSON and text formats) will be generated in the `/tmp/` directory. *Note: This requires the MySQL user to have the `FILE` privilege.*
+
+*   **Manual Execution:** If you prefer manual execution, run the SQL scripts using the `mysql` client from the project root directory, remembering the `--local-infile=1` flag:
+    ```bash
+    # 1. Teardown (Optional)
     mysql --local-infile=1 -u root -p < sql/teardown.sql 
     
     # 2. Setup Schema
     mysql --local-infile=1 -u root -p < sql/setup.sql
     
-    # 3. Populate Data
-    mysql --local-infile=1 -u root -p < sql/populate_data.sql
-    ```
-    *(Enter your MySQL root password when prompted for each command)*
-
-*Note: If you cannot enable `local_infile` on the server or client, you would need to modify `sql/populate_data.sql` to remove the `LOCAL` keyword from `LOAD DATA LOCAL INFILE` commands. This requires placing the CSV files in a directory accessible *directly* by the MySQL server process, which is often restricted by the `secure_file_priv` system variable and generally less convenient for development.*
-
-## Running Tests
-
-To verify the database schema, constraints, and functional requirements implementation:
-
-1.  **Run Unittests:** Execute the following command from the project's root directory:
-    ```bash
+    # 3. Run Unit Tests (Optional - against empty schema)
     python -m unittest discover tests
-    ```
-    All tests should pass if the database is set up correctly.
-
-2.  **Run Individual Test Files:** If you want to run specific tests:
-    ```bash
-    # Example: Run only the functional requirements tests
-    python -m unittest tests/test_functional_requirements.py
     
-    # Example: Run only a specific data requirement test
-    python -m unittest tests/test_data_requirements/test_parks.py
+    # 4. Populate Data
+    mysql --local-infile=1 -u root -p < sql/populate_data.sql
+    
+    # 5. Run Unit Tests (Optional - against populated schema)
+    python -m unittest discover tests
+    
+    # 6. Run Analysis Scripts
+    mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql
+    mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql
     ```
+
+*Note on `local_infile`: If you cannot enable `local_infile` on the server or client, you must modify `sql/populate_data.sql` to remove the `LOCAL` keyword from `LOAD DATA LOCAL INFILE` commands. This requires placing the CSV files in a directory accessible *directly* by the MySQL server process (often restricted by `secure_file_priv`).*
 
 ## Database Teardown
 

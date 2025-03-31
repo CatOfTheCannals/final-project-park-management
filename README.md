@@ -11,38 +11,72 @@ This project implements a database system for managing information about natural
     pip install pymysql
     ```
 
-## Database Setup
+## Database Setup and Population
 
-1.  **Clean up any existing database:** Before setting up, it's recommended to run the teardown script first to avoid conflicts with previous installations:
-    ```bash
-    # Example using mysql client (enter password when prompted)
-    mysql -u root -p < sql/teardown.sql
+This section details how to set up the `park_management` database, create the schema, and populate it with sample data using the provided SQL scripts and CSV files.
+
+### 1. Prerequisites: MySQL `local_infile` Configuration
+
+The `sql/populate_data.sql` script uses `LOAD DATA LOCAL INFILE` for efficient bulk loading from CSV files. This feature must be enabled on **both** the MySQL server and the client you use to connect.
+
+**a) Server Configuration:**
+
+*   **Check Current Setting:** Connect to your MySQL server as an administrator (e.g., `root`) and run:
+    ```sql
+    SHOW GLOBAL VARIABLES LIKE 'local_infile';
     ```
-
-2.  **Run Setup Script:** Execute the `setup.sql` script to create the database (`park_management`) and all necessary tables, triggers, and procedures:
-    ```bash
-    # Example using mysql client (enter password when prompted)
-    mysql -u root -p < sql/setup.sql
-    ```
-    *Note: This script includes `CREATE DATABASE IF NOT EXISTS park_management;` and `USE park_management;`.*
-
-## Populating Data (Required for Functional Tests)
-
-To populate the database with sample data for demonstration and query testing:
-
-1.  **Ensure CSV Files Exist:** Verify that the CSV data files are present in the `data/load/` directory relative to where you will run the `mysql` client.
-2.  **Enable `local_infile` (If Needed):** The `populate_data.sql` script uses `LOAD DATA LOCAL INFILE`. This requires both the MySQL server and the client to have this feature enabled.
-    *   **Server:** Check the `local_infile` system variable (`SHOW GLOBAL VARIABLES LIKE 'local_infile';`). If it's `OFF`, you need to start the server with `local-infile=1` in its configuration file (e.g., `my.cnf` or `my.ini`) or set it dynamically (`SET GLOBAL local_infile = 1;` - requires SUPER privilege).
-    *   **Client:** When connecting with the `mysql` client, use the `--local-infile=1` option:
-        ```bash
-        mysql --local-infile=1 -u root -p
+*   **Enable if `OFF`:** If the value is `OFF`, you need to enable it. The method depends on your operating system and MySQL installation:
+    *   **Linux:** Edit the MySQL configuration file (e.g., `/etc/mysql/my.cnf`, `/etc/mysql/mysql.conf.d/mysqld.cnf`, or `/etc/my.cnf`). Under the `[mysqld]` section, add or modify the line:
+        ```ini
+        [mysqld]
+        local_infile=1
         ```
-3.  **Run Populate Script:** After running `setup.sql` and ensuring `local_infile` is enabled, execute the `populate_data.sql` script:
+        Then, restart the MySQL server: `sudo systemctl restart mysql` (or `mysqld`).
+    *   **macOS (Homebrew):** Find your configuration file (often `/opt/homebrew/etc/my.cnf`). If it doesn't exist, create it. Add the following lines:
+        ```ini
+        [mysqld]
+        local_infile=1
+        ```
+        Restart the MySQL server: `brew services restart mysql`.
+    *   **Dynamic (Requires SUPER privilege):** You can also try setting it dynamically (this might not persist across server restarts):
+        ```sql
+        SET GLOBAL local_infile = 1;
+        ```
+*   **Verify:** Run `SHOW GLOBAL VARIABLES LIKE 'local_infile';` again. The value should now be `ON`.
+
+**b) Client Configuration:**
+
+*   When running the `mysql` command-line client to execute the SQL scripts, you **must** include the `--local-infile=1` flag.
+
+### 2. Running the Setup and Population Scripts
+
+The recommended way to set up and populate the database is using the provided shell script. This ensures the scripts are run in the correct order.
+
+*   **Using the Script (Recommended):**
+    1.  Make the script executable (if you haven't already):
+        ```bash
+        chmod +x scripts/setup_database.sh
+        ```
+    2.  Run the script from the project's root directory:
+        ```bash
+        ./scripts/setup_database.sh
+        ```
+        You might be prompted for your MySQL root password multiple times.
+
+*   **Manual Execution:** If you prefer to run the commands manually, execute them from the project's root directory in this specific order:
     ```bash
-    # Example using mysql client (enter password when prompted)
+    # 1. Teardown (Optional but recommended for a clean slate)
+    mysql --local-infile=1 -u root -p < sql/teardown.sql 
+    
+    # 2. Setup Schema
+    mysql --local-infile=1 -u root -p < sql/setup.sql
+    
+    # 3. Populate Data
     mysql --local-infile=1 -u root -p < sql/populate_data.sql
     ```
-    *Note: If you cannot enable `local_infile`, you would need to modify `populate_data.sql` to use `LOAD DATA INFILE` (without `LOCAL`) and ensure the CSV files are placed in a directory accessible by the MySQL server process itself (often restricted by the `secure_file_priv` system variable).*
+    *(Enter your MySQL root password when prompted for each command)*
+
+*Note: If you cannot enable `local_infile` on the server or client, you would need to modify `sql/populate_data.sql` to remove the `LOCAL` keyword from `LOAD DATA LOCAL INFILE` commands. This requires placing the CSV files in a directory accessible *directly* by the MySQL server process, which is often restricted by the `secure_file_priv` system variable and generally less convenient for development.*
 
 ## Running Tests
 

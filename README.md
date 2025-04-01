@@ -73,7 +73,7 @@ chmod +x scripts/*.sh
     ```
     *(Prompts for MySQL password during schema setup)*
 
-*   **Run SQL Analysis:** Sets up a clean schema, populates it with data, and then runs the SQL analysis scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile`. Results are printed to standard output.
+*   **Run SQL Analysis:** Sets up a clean schema, populates it with data, and then runs the SQL analysis scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile`. Results are saved to files within the `results/analysis/` directory.
     ```bash
     ./scripts/run_analysis.sh
     ```

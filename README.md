@@ -99,14 +99,15 @@ chmod +x scripts/*.sh
 
 ## Running Analysis (Standalone)
 
-If the database is already set up and populated, you can run *only* the analysis scripts:
+If the database is already set up and populated, you can run *only* the analysis scripts and redirect their output manually:
 
 ```bash
 # Ensure you are in the project root directory
-mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql
-mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql
+mkdir -p results/analysis # Create directory if needed
+mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql > results/analysis/table_sizes_output.txt
+mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql > results/analysis/execution_plans_output.txt
 ```
-*(You will be prompted for the MySQL password. Results are printed to standard output.)*
+*(You will be prompted for the MySQL password. Results are saved to the specified files.)*
 
 ## Database Teardown
 

@@ -12,6 +12,7 @@ PROJECT_ROOT=$( cd -- "$SCRIPT_DIR/.." &> /dev/null && pwd )
 
 # Define paths relative to the project root
 SQL_DIR="$PROJECT_ROOT/sql"
+RESULTS_DIR="$PROJECT_ROOT/results/analysis"
 
 # Define MySQL connection details (adjust if necessary)
 MYSQL_USER="root"
@@ -33,23 +34,31 @@ fi
 echo "Changing to project root: $PROJECT_ROOT"
 cd "$PROJECT_ROOT" || { echo "ERROR: Failed to change directory to $PROJECT_ROOT"; exit 1; }
 
-echo "Running table size analysis..."
-# Use --local-infile=1 for consistency.
-mysql --local-infile=1 -u"$MYSQL_USER" -p < "$SQL_DIR/analyze_table_sizes.sql"
+# Create results directory if it doesn't exist
+mkdir -p "$RESULTS_DIR"
+echo "Ensured results directory exists: $RESULTS_DIR"
+
+# Define output file paths
+TABLE_SIZE_OUTPUT="$RESULTS_DIR/table_sizes_output.txt"
+EXEC_PLAN_OUTPUT="$RESULTS_DIR/execution_plans_output.txt"
+
+echo "Running table size analysis (output to $TABLE_SIZE_OUTPUT)..."
+# Use --local-infile=1 for consistency. Redirect output to file.
+mysql --local-infile=1 -u"$MYSQL_USER" -p < "$SQL_DIR/analyze_table_sizes.sql" > "$TABLE_SIZE_OUTPUT"
 if [ $? -ne 0 ]; then
   echo "ERROR: Table size analysis failed. Check $SQL_DIR/analyze_table_sizes.sql and MySQL permissions."
   # Continue to next script even if this one fails
 fi
-echo "Table size analysis complete (output above)."
+echo "Table size analysis complete."
 
 
-echo "Running execution plan analysis..."
-mysql --local-infile=1 -u"$MYSQL_USER" -p < "$SQL_DIR/analyze_execution_plans.sql"
+echo "Running execution plan analysis (output to $EXEC_PLAN_OUTPUT)..."
+mysql --local-infile=1 -u"$MYSQL_USER" -p < "$SQL_DIR/analyze_execution_plans.sql" > "$EXEC_PLAN_OUTPUT"
 if [ $? -ne 0 ]; then
   echo "ERROR: Execution plan analysis failed. Check $SQL_DIR/analyze_execution_plans.sql and MySQL permissions."
   exit 1 # Exit if this critical analysis fails
 fi
-echo "Execution plan analysis complete (output above)."
+echo "Execution plan analysis complete."
 
-echo "Analysis scripts finished."
+echo "Analysis scripts finished. Results saved in $RESULTS_DIR"
 exit 0

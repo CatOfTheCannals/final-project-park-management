@@ -17,21 +17,23 @@ FROM
 WHERE 
     table_schema = 'park_management'
 ORDER BY 
-    (data_length + index_length) DESC
-INTO OUTFILE '/tmp/table_sizes.txt';
+    (data_length + index_length) DESC;
+-- INTO OUTFILE '/tmp/table_sizes.txt'; -- Removed INTO OUTFILE
 
 -- Get detailed information about each table
+SELECT '-- Table List --' AS ' '; -- Header for clarity
 SELECT 
-    CONCAT('Table: ', table_name) AS 'Table Information'
+    table_name AS 'Table Name'
 FROM 
     information_schema.TABLES
 WHERE 
     table_schema = 'park_management'
 ORDER BY 
-    table_name
-INTO OUTFILE '/tmp/table_list.txt';
+    table_name;
+-- INTO OUTFILE '/tmp/table_list.txt'; -- Removed INTO OUTFILE
 
 -- Count rows in each table
+SELECT '-- Row Counts --' AS ' '; -- Header for clarity
 SELECT 'provinces' AS 'Table', COUNT(*) AS 'Row Count' FROM provinces
 UNION ALL
 SELECT 'parks', COUNT(*) FROM parks
@@ -74,10 +76,11 @@ SELECT 'accommodation_excursions', COUNT(*) FROM accommodation_excursions
 UNION ALL
 SELECT 'visitor_excursions', COUNT(*) FROM visitor_excursions
 ORDER BY 
-    `Row Count` DESC
-INTO OUTFILE '/tmp/table_row_counts.txt';
+    `Row Count` DESC;
+-- INTO OUTFILE '/tmp/table_row_counts.txt'; -- Removed INTO OUTFILE
 
 -- Get column information for each table
+SELECT '-- Column Details --' AS ' '; -- Header for clarity
 SELECT 
     TABLE_NAME as 'Table',
     COLUMN_NAME as 'Column',
@@ -91,5 +94,5 @@ FROM
 WHERE 
     TABLE_SCHEMA = 'park_management'
 ORDER BY 
-    TABLE_NAME, ORDINAL_POSITION
-INTO OUTFILE '/tmp/table_columns.txt';
+    TABLE_NAME, ORDINAL_POSITION;
+-- INTO OUTFILE '/tmp/table_columns.txt'; -- Removed INTO OUTFILE

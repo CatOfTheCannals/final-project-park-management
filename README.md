@@ -73,7 +73,7 @@ chmod +x scripts/*.sh
     ```
     *(Prompts for MySQL password during schema setup)*
 
-*   **Run SQL Analysis:** Sets up a clean schema, populates it with data, and then runs the SQL analysis scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile` and `FILE` privilege. Output files are generated in `/tmp/`.
+*   **Run SQL Analysis:** Sets up a clean schema, populates it with data, and then runs the SQL analysis scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile`. Results are printed to standard output.
     ```bash
     ./scripts/run_analysis.sh
     ```
@@ -106,7 +106,7 @@ If the database is already set up and populated, you can run *only* the analysis
 mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql
 mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql
 ```
-*(You will be prompted for the MySQL password. Requires FILE privilege. Output files go to /tmp/)*
+*(You will be prompted for the MySQL password. Results are printed to standard output.)*
 
 ## Database Teardown
 

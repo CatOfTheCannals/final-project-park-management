@@ -2,149 +2,133 @@
 -- Outputs results to files for better analysis
 USE park_management;
 
--- Create indexes for better query performance (using DROP IF EXISTS for compatibility)
-DROP INDEX IF EXISTS idx_park_provinces_province_id ON park_provinces;
+-- Create indexes for better query performance
+-- Note: DROP INDEX IF EXISTS removed as schema is created fresh by run_analysis.sh
 CREATE INDEX idx_park_provinces_province_id ON park_provinces(province_id);
-
-DROP INDEX IF EXISTS idx_area_elements_element_id ON area_elements;
 CREATE INDEX idx_area_elements_element_id ON area_elements(element_id);
-
-DROP INDEX IF EXISTS idx_area_elements_park_id ON area_elements;
 CREATE INDEX idx_area_elements_park_id ON area_elements(park_id);
-
-DROP INDEX IF EXISTS idx_natural_elements_scientific_name ON natural_elements;
 CREATE INDEX idx_natural_elements_scientific_name ON natural_elements(scientific_name);
-
-DROP INDEX IF EXISTS idx_parks_code ON parks;
 CREATE INDEX idx_parks_code ON parks(code);
-
-DROP INDEX IF EXISTS idx_visitors_park_id ON visitors;
 CREATE INDEX idx_visitors_park_id ON visitors(park_id);
 
 -- =============================================
 -- FUNCTIONAL REQUIREMENT 1: Province with most parks
 -- =============================================
-SELECT 'EXECUTION PLAN FOR FUNCTIONAL REQUIREMENT 1: Province with most parks' AS 'Analysis'
-INTO OUTFILE '/tmp/fr1_analysis.txt';
+SELECT '-- ANALYSIS: FUNCTIONAL REQUIREMENT 1: Province with most parks --' AS ' ';
 
 -- Execution plan
+SELECT '-- Execution Plan (JSON): --' AS ' ';
 EXPLAIN FORMAT=JSON
 SELECT p.name, COUNT(pp.park_id) AS park_count
 FROM provinces p
 JOIN park_provinces pp ON p.id = pp.province_id
 GROUP BY p.id, p.name
 ORDER BY park_count DESC
-LIMIT 1
-INTO OUTFILE '/tmp/fr1_plan.json';
+LIMIT 1;
 
 -- Actual query result
+SELECT '-- Query Result: --' AS ' ';
 SELECT p.name, COUNT(pp.park_id) AS park_count
 FROM provinces p
 JOIN park_provinces pp ON p.id = pp.province_id
 GROUP BY p.id, p.name
 ORDER BY park_count DESC
-LIMIT 1
-INTO OUTFILE '/tmp/fr1_result.txt';
+LIMIT 1;
 
 -- =============================================
 -- FUNCTIONAL REQUIREMENT 2: Vegetal species in at least half of parks
 -- =============================================
-SELECT 'EXECUTION PLAN FOR FUNCTIONAL REQUIREMENT 2: Vegetal species in at least half of parks' AS 'Analysis'
-INTO OUTFILE '/tmp/fr2_analysis.txt';
+SELECT '-- ANALYSIS: FUNCTIONAL REQUIREMENT 2: Vegetal species in at least half of parks --' AS ' ';
 
 -- Execution plan
+SELECT '-- Execution Plan (JSON): --' AS ' ';
 EXPLAIN FORMAT=JSON
 SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count
 FROM natural_elements ne
 JOIN vegetal_elements ve ON ne.id = ve.element_id
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING park_count >= (SELECT COUNT(*)/2 FROM parks)
-INTO OUTFILE '/tmp/fr2_plan.json';
+HAVING park_count >= (SELECT COUNT(*)/2 FROM parks);
 
 -- Actual query result
+SELECT '-- Query Result: --' AS ' ';
 SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count, 
        (SELECT COUNT(*)/2 FROM parks) as half_parks_count
 FROM natural_elements ne
 JOIN vegetal_elements ve ON ne.id = ve.element_id
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING park_count >= (SELECT COUNT(*)/2 FROM parks)
-INTO OUTFILE '/tmp/fr2_result.txt';
+HAVING park_count >= (SELECT COUNT(*)/2 FROM parks);
 
 -- =============================================
 -- FUNCTIONAL REQUIREMENT 3: Count visitors in parks with codes A and B
 -- =============================================
-SELECT 'EXECUTION PLAN FOR FUNCTIONAL REQUIREMENT 3: Count visitors in parks with codes A and B' AS 'Analysis'
-INTO OUTFILE '/tmp/fr3_analysis.txt';
+SELECT '-- ANALYSIS: FUNCTIONAL REQUIREMENT 3: Count visitors in parks with codes A and B --' AS ' ';
 
 -- Execution plan
+SELECT '-- Execution Plan (JSON): --' AS ' ';
 EXPLAIN FORMAT=JSON
 SELECT COUNT(v.id) as visitor_count
 FROM visitors v
 JOIN parks p ON v.park_id = p.id
-WHERE p.code IN ('A', 'B')
-INTO OUTFILE '/tmp/fr3_plan.json';
+WHERE p.code IN ('A', 'B');
 
 -- Actual query result
+SELECT '-- Query Result: --' AS ' ';
 SELECT COUNT(v.id) as visitor_count
 FROM visitors v
 JOIN parks p ON v.park_id = p.id
-WHERE p.code IN ('A', 'B')
-INTO OUTFILE '/tmp/fr3_result.txt';
+WHERE p.code IN ('A', 'B');
 
 -- =============================================
 -- ADDITIONAL REQUIREMENT 3: Species in all parks
 -- =============================================
-SELECT 'EXECUTION PLAN FOR ADDITIONAL REQUIREMENT 3: Species in all parks' AS 'Analysis'
-INTO OUTFILE '/tmp/ar3_analysis.txt';
+SELECT '-- ANALYSIS: ADDITIONAL REQUIREMENT 3: Species in all parks --' AS ' ';
 
 -- Execution plan
+SELECT '-- Execution Plan (JSON): --' AS ' ';
 EXPLAIN FORMAT=JSON
 SELECT ne.scientific_name
 FROM natural_elements ne
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING COUNT(DISTINCT ae.park_id) = (SELECT COUNT(*) FROM parks)
-INTO OUTFILE '/tmp/ar3_plan.json';
+HAVING COUNT(DISTINCT ae.park_id) = (SELECT COUNT(*) FROM parks);
 
 -- Actual query result
+SELECT '-- Query Result: --' AS ' ';
 SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count, 
        (SELECT COUNT(*) FROM parks) as total_parks
 FROM natural_elements ne
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING COUNT(DISTINCT ae.park_id) = (SELECT COUNT(*) FROM parks)
-INTO OUTFILE '/tmp/ar3_result.txt';
+HAVING COUNT(DISTINCT ae.park_id) = (SELECT COUNT(*) FROM parks);
 
 -- =============================================
 -- ADDITIONAL REQUIREMENT 4: Species in only one park
 -- =============================================
-SELECT 'EXECUTION PLAN FOR ADDITIONAL REQUIREMENT 4: Species in only one park' AS 'Analysis'
-INTO OUTFILE '/tmp/ar4_analysis.txt';
+SELECT '-- ANALYSIS: ADDITIONAL REQUIREMENT 4: Species in only one park --' AS ' ';
 
 -- Execution plan
+SELECT '-- Execution Plan (JSON): --' AS ' ';
 EXPLAIN FORMAT=JSON
 SELECT ne.scientific_name
 FROM natural_elements ne
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING COUNT(DISTINCT ae.park_id) = 1
-INTO OUTFILE '/tmp/ar4_plan.json';
+HAVING COUNT(DISTINCT ae.park_id) = 1;
 
 -- Actual query result
+SELECT '-- Query Result: --' AS ' ';
 SELECT ne.scientific_name, COUNT(DISTINCT ae.park_id) as park_count
 FROM natural_elements ne
 JOIN area_elements ae ON ne.id = ae.element_id
 GROUP BY ne.id, ne.scientific_name
-HAVING COUNT(DISTINCT ae.park_id) = 1
-INTO OUTFILE '/tmp/ar4_result.txt';
+HAVING COUNT(DISTINCT ae.park_id) = 1;
 
 -- =============================================
 -- Summary of indexes created
 -- =============================================
-SELECT 'SUMMARY OF INDEXES CREATED' AS 'Analysis'
-INTO OUTFILE '/tmp/indexes_summary.txt';
+SELECT '-- SUMMARY OF INDEXES CREATED --' AS ' ';
 
 SELECT 
     table_name, 
@@ -159,5 +143,4 @@ WHERE
 GROUP BY 
     table_name, index_name, index_type, is_visible
 ORDER BY 
-    table_name, index_name
-INTO OUTFILE '/tmp/indexes_details.txt';
+    table_name, index_name;

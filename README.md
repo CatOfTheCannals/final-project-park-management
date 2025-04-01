@@ -55,58 +55,58 @@ We provide shell scripts to automate the common workflows. Ensure they are execu
 chmod +x scripts/*.sh
 ```
 
-*   **Setup and Populate Database:** This script handles teardown, schema creation, and data loading. Run it from the project root:
+*   **Setup Database Schema:** Creates a clean, empty database structure. Handles teardown first.
     ```bash
-    ./scripts/setup_database.sh
+    ./scripts/setup_schema.sh
     ```
-    You will be prompted for your MySQL root password.
+    *(Prompts for MySQL password)*
 
-*   **Run Unit Tests:** After setting up the database (you can run tests *before* or *after* populating), execute:
+*   **Populate Database:** Loads data from CSV files into the existing schema. Requires `local_infile` to be enabled (see Prerequisites).
+    ```bash
+    ./scripts/populate_database.sh
+    ```
+    *(Prompts for MySQL password)*
+
+*   **Run Unit Tests:** Sets up a clean schema and runs the Python unit tests. Tests manage their own data insertion/deletion.
     ```bash
     ./scripts/run_tests.sh
     ```
-    This runs all Python unit tests located in the `tests/` directory.
+    *(Prompts for MySQL password during schema setup)*
 
-*   **Run SQL Analysis:** After setting up and *populating* the database, run the analysis scripts:
+*   **Run SQL Analysis:** Sets up a clean schema, populates it with data, and then runs the SQL analysis scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile` and `FILE` privilege. Output files are generated in `/tmp/`.
     ```bash
     ./scripts/run_analysis.sh
     ```
-    This executes `sql/analyze_table_sizes.sql` and `sql/analyze_execution_plans.sql`. You will be prompted for your MySQL root password. The output files (table sizes, execution plans in JSON and text formats) will be generated in the `/tmp/` directory. *Note: This requires the MySQL user to have the `FILE` privilege.*
+    *(Prompts for MySQL password multiple times)*
 
-*   **Manual Execution:** If you prefer manual execution, run the SQL scripts using the `mysql` client from the project root directory, remembering the `--local-infile=1` flag:
+*   **Manual Execution:** If you prefer manual execution, run the SQL scripts using the `mysql` client from the project root directory:
     ```bash
-    # 1. Teardown (Optional)
-    mysql --local-infile=1 -u root -p < sql/teardown.sql 
+    # 1. Setup Schema (Teardown is included)
+    mysql -u root -p < sql/setup.sql
     
-    # 2. Setup Schema
-    mysql --local-infile=1 -u root -p < sql/setup.sql
-    
-    # 3. Run Unit Tests (Optional - against empty schema)
+    # 2. Run Unit Tests (Against empty schema)
     python -m unittest discover tests
     
-    # 4. Populate Data
+    # 3. Populate Data (Requires local_infile enabled)
     mysql --local-infile=1 -u root -p < sql/populate_data.sql
     
-    # 5. Run Unit Tests (Optional - against populated schema)
-    python -m unittest discover tests
-    
-    # 6. Run Analysis Scripts
+    # 4. Run Analysis Scripts (Requires FILE privilege)
     mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql
     mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql
     ```
 
 *Note on `local_infile`: If you cannot enable `local_infile` on the server or client, you must modify `sql/populate_data.sql` to remove the `LOCAL` keyword from `LOAD DATA LOCAL INFILE` commands. This requires placing the CSV files in a directory accessible *directly* by the MySQL server process (often restricted by `secure_file_priv`).*
 
-## Running Analysis
+## Running Analysis (Standalone)
 
-After populating the database, you can run the analysis scripts to generate execution plans and table size reports:
+If the database is already set up and populated, you can run *only* the analysis scripts:
 
 ```bash
-./scripts/run_analysis.sh 
+# Ensure you are in the project root directory
+mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql
+mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql
 ```
-*(You will be prompted for the MySQL password)*
-
-This script executes `sql/analyze_table_sizes.sql` and `sql/analyze_execution_plans.sql`. Output files will be generated in the `/tmp/` directory (e.g., `/tmp/table_sizes.txt`, `/tmp/fr1_plan.json`). Ensure your MySQL user has the `FILE` privilege.
+*(You will be prompted for the MySQL password. Requires FILE privilege. Output files go to /tmp/)*
 
 ## Database Teardown
 

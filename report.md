@@ -123,6 +123,14 @@ Based on our database schema and the expected data volumes, here are the estimat
    - Similar execution plan to Add Req 3
    - Simpler HAVING condition makes this slightly more efficient
 
+   **Análisis Específico (Punto 1.c y 1.d):**
+
+   *   **Consulta "Especies en todos los parques" (Add Req 3):** Esta consulta requiere agregar los datos de `area_elements` por `element_id` para contar los parques únicos (`COUNT(DISTINCT ae.park_id)`). El plan de ejecución (visible en `results/analysis/execution_plans_output.txt`) muestra que se utiliza el índice `idx_area_elements_element_id` para agrupar eficientemente las filas por elemento antes de contar los parques. La unión con `natural_elements` se realiza mediante la clave primaria. La comparación final se hace contra una subconsulta que cuenta el total de parques. Gracias a los datos añadidos en `data/load/area_elements.csv` (específicamente, asegurando que el Puma, ID 2, esté en todos los parques), esta consulta ahora devuelve el resultado esperado.
+
+   *   **Consulta "Especies en un único parque" (Add Req 4):** Similar a la anterior, agrupa por elemento usando `idx_area_elements_element_id` y cuenta los parques distintos. La condición `HAVING COUNT(DISTINCT ae.park_id) = 1` filtra los resultados. El plan de ejecución es eficiente gracias al índice propuesto. Los datos de ejemplo incluyen varias especies que solo existen en un parque, permitiendo que esta consulta devuelva resultados significativos.
+
+   Los índices propuestos (`idx_area_elements_element_id`, `idx_area_elements_park_id`, `idx_natural_elements_scientific_name`, `idx_parks_code`, `idx_visitors_park_id`, además de los índices automáticos de claves primarias y foráneas) son adecuados para optimizar el conjunto completo de consultas requeridas, incluyendo las del punto 1.c.
+
 ### Database Comparison Procedure (Additional Req 6)
 
 A stored procedure named `compare_databases` has been implemented in `sql/setup.sql`. It accepts two database names as input parameters and compares their schema definitions using queries against the `INFORMATION_SCHEMA`.

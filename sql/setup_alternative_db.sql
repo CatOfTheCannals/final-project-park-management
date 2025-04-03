@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS park_areas (
 CREATE TABLE IF NOT EXISTS natural_elements (
     id INT AUTO_INCREMENT PRIMARY KEY,
     scientific_name VARCHAR(255) UNIQUE,
-    common_name VARCHAR(255)
+    common_name VARCHAR(255) UNIQUE
 );
 -- Add index matching the main schema
 CREATE INDEX idx_natural_elements_scientific_name ON natural_elements(scientific_name);
@@ -192,5 +192,27 @@ CREATE TABLE IF NOT EXISTS visitor_excursions (
 
 -- Deliberately omit the email_log table and its trigger
 -- Deliberately omit the compare_databases procedure
+
+-- Additional tables for the alternative schema
+
+-- Eco Innovations: Capturing sustainable projects and innovations in parks
+CREATE TABLE IF NOT EXISTS eco_innovations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    park_id INT,
+    innovation_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE
+);
+
+-- Adventure Trails: Recording exciting trail information for park visitors
+CREATE TABLE IF NOT EXISTS adventure_trails (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    park_id INT,
+    trail_name VARCHAR(255) NOT NULL,
+    length DECIMAL(10,2) NOT NULL,
+    difficulty ENUM('Easy','Moderate','Hard') NOT NULL,
+    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE
+);
+
 
 SELECT 'Alternative database schema created.' AS status;

@@ -109,6 +109,29 @@ mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql > results/an
 ```
 *(You will be prompted for the MySQL password. Results are saved to the specified files.)*
 
+## Running Database Schema Comparison (Additional Req 6)
+
+To fulfill the requirement of comparing two database schemas:
+
+1.  **Ensure Scripts are Executable:**
+    ```bash
+    chmod +x scripts/run_db_comparison.sh
+    ```
+2.  **Run the Comparison Script:**
+    ```bash
+    ./scripts/run_db_comparison.sh
+    ```
+    *(Prompts for MySQL password multiple times)*
+
+**What it does:**
+*   Sets up the main `park_management` database using `setup_schema.sh`.
+*   Sets up an alternative database `park_management_alt` with deliberate differences using `sql/setup_alternative_db.sql`.
+*   Creates the `compare_databases` stored procedure in `park_management` using `sql/create_comparison_procedure.sql`.
+*   Executes `CALL park_management.compare_databases('park_management', 'park_management_alt');`.
+*   Saves the comparison output to `results/comparison/schema_comparison_output.txt`.
+
+This demonstrates the comparison procedure against two schemas with known differences (missing tables, indexes, constraints).
+
 ## Database Teardown
 
 To remove the database created by this project:

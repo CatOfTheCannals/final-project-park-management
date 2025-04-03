@@ -275,28 +275,3 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
--- Stored Procedure (Additional Req 6 - Skeleton)
-DELIMITER //
-CREATE PROCEDURE compare_databases (IN db1_name VARCHAR(64), IN db2_name VARCHAR(64))
-BEGIN
-    -- Placeholder for comparison logic
-    -- This will compare tables, indexes, constraints between db1_name and db2_name
-    -- using INFORMATION_SCHEMA.
-    SELECT 'Procedure compare_databases called with:', db1_name, db2_name;
-
-    -- Example: Compare tables
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = db1_name
-    AND table_name NOT IN (SELECT table_name FROM information_schema.tables WHERE table_schema = db2_name);
-
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = db2_name
-    AND table_name NOT IN (SELECT table_name FROM information_schema.tables WHERE table_schema = db1_name);
-
-    -- Add more comparisons for columns, indexes, constraints etc.
-
-END //
-DELIMITER ;

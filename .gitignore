@@ -1,3 +1,4 @@
 .aider*
 .venv
-.pyc
+*.pyc
+__pycache

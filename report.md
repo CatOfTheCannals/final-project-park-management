@@ -206,8 +206,3 @@ These results confirm that the `compare_databases` procedure successfully identi
 | Special Features | Doublewrite buffer | PITR, streaming replication |
 
 Both systems provide robust concurrency control and recovery mechanisms, with PostgreSQL offering more advanced point-in-time recovery options and MySQL providing slightly better performance in high-concurrency OLTP workloads due to its optimized implementation of MVCC.
-
-## Trade-offs
-- **Test Focus vs Implementation Speed:** By focusing on tests first, we ensure quality but may initially be slower than direct implementation.
-- **Schema Complexity vs Requirement Fidelity:** Some relationships (mentioned in Simplifications) were omitted or simplified to reduce schema complexity and meet the "minimal effort" guideline. Some constraints (like element food rules) were implemented via triggers due to database engine limitations (MySQL CHECK constraints).
-- **Data Volume vs Performance:** The current schema is optimized for the expected data volume. For significantly larger datasets, additional denormalization or specialized indexes might be needed.

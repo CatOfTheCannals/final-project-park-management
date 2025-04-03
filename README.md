@@ -52,7 +52,7 @@ tests. This verifies the schema creation and basic constraints without relying o
 
 *   **Run Full Analysis:** Sets up a clean schema, populates it with the full dataset from CSVs, and runs SQL analysis
 scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `local_infile`. Saves results to
-`pre_computed_results/analysis/`. This workflow demonstrates the queries and indexing against the intended dataset.
+`results/analysis/`. This workflow demonstrates the queries and indexing against the intended dataset.
     ```bash
     ./scripts/run_analysis.sh
     ```
@@ -60,7 +60,7 @@ scripts (`analyze_table_sizes.sql`, `analyze_execution_plans.sql`). Requires `lo
 
 *   **Run Database Schema Comparison:** Sets up the main schema, sets up an alternative schema (`park_management_alt`)
 with known differences, creates the comparison procedure, runs it, and saves the output to
-`pre_computed_results/comparison/`. This demonstrates the schema comparison requirement.
+`results/comparison/`. This demonstrates the schema comparison requirement.
     ```bash
     ./scripts/run_db_comparison.sh
     ```
@@ -102,12 +102,11 @@ If you prefer to run steps manually from the project root:
     ```
 *   **Run Analysis Scripts:** (Requires populated schema and `local_infile`)
     ```bash
-    mkdir -p pre_computed_results/analysis
-    mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql >
-pre_computed_results/analysis/table_sizes_output.txt
-    mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql >
-pre_computed_results/analysis/execution_plans_output.txt
+    mkdir -p results/analysis
+    mysql --local-infile=1 -u root -p < sql/analyze_table_sizes.sql > results/analysis/table_sizes_output.txt
+    mysql --local-infile=1 -u root -p < sql/analyze_execution_plans.sql > results/analysis/execution_plans_output.txt
     ```
+
 *   **Run Database Comparison:** (Requires main schema)
     ```bash
     # Setup alternative DB
@@ -116,9 +115,8 @@ pre_computed_results/analysis/execution_plans_output.txt
     # Create procedure in main DB
     mysql -u root -p < sql/create_comparison_procedure.sql
     # Run comparison and save output
-    mkdir -p pre_computed_results/comparison
-    mysql -u root -p -e "CALL park_management.compare_databases('park_management', 'park_management_alt');" >
-pre_computed_results/comparison/schema_comparison_output.txt
+    mkdir -p results/comparison
+    mysql -u root -p -e "CALL park_management.compare_databases('park_management', 'park_management_alt');" > results/comparison/schema_comparison_output.txt
     ```
 
 ### 4. Generating ER Diagrams with ERAlchemy

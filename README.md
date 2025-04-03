@@ -1,6 +1,6 @@
 # Park Management Database Project
 
-This project implements a database system for managing information about natural parks in Argentina, based on the requirements for a university assignment.
+This project implements a database system for managing information about natural parks in Argentina, based on the requirements for an assignment at Universidad de Buenos Aires (UBA) .
 
 ## Prerequisites
 

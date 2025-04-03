@@ -2,10 +2,12 @@
 
 This project implements a database system for managing information about natural parks in Argentina, based on the requirements for an assignment at Universidad de Buenos Aires (UBA) .
 
+
+
 ## Prerequisites
 
 *   **Python:** Version 3.x (tested with 3.13)
-*   **MySQL Server:** A running MySQL server instance (tested with 8.x). Ensure you have credentials (user/password) with privileges to create databases and tables. The default connection uses `root` with no password on `localhost`. Adjust connection details in test files if needed.
+*   **MySQL Server:** A running MySQL server instance (tested with 8.x). Ensure you have credentials (user/password) with privileges to create databases and tables. The default connection uses `root` with no password on `localhost`. Adjust connection details in script files if needed.
 *   **Python MySQL Connector:** The `pymysql` library. Install using pip:
     ```bash
     pip install pymysql
@@ -119,7 +121,39 @@ pre_computed_results/analysis/execution_plans_output.txt
 pre_computed_results/comparison/schema_comparison_output.txt
     ```
 
-### 4. Database Teardown
+### 4. Generating ER Diagrams with ERAlchemy
+
+This project uses [ERAlchemy](https://github.com/eralchemy/eralchemy) to automatically generate an Entity Relationship Diagram (ERD) of the `park_management` database. Follow these steps to set up and run ERAlchemy:
+
+1. **Install Graphviz:**  
+   On macOS, install Graphviz using Homebrew:
+   ```bash
+   brew install graphviz
+   ```
+   Then, ensure the build process can find Graphviz's headers and libraries by exporting the paths:
+   ```bash
+   export CFLAGS="-I$(brew --prefix graphviz)/include"
+   export LDFLAGS="-L$(brew --prefix graphviz)/lib"
+   ```
+
+2. **Install MySQL Client Library:**  
+   Since ERAlchemy uses the MySQLdb dialect, install the `mysqlclient` package:
+   ```bash
+   pip install mysqlclient
+   ```
+
+3. **Generate the ER Diagram:**  
+   Run the following command (note that the connection string is wrapped in quotes to prevent shell interpretation of special characters):
+   ```bash
+   eralchemy -i 'mysql+mysqldb://root:@localhost/park_management?charset=utf8mb4' -o park_management_er.png
+   ```
+   To view the generated diagram, open the PNG file:
+   ```bash
+   open park_management_er.png
+   ```
+
+
+### 5. Database Teardown
 
 To remove the databases created by this project (`park_management` and `park_management_alt`):
 
@@ -127,22 +161,6 @@ To remove the databases created by this project (`park_management` and `park_man
 mysql -u root -p < sql/teardown.sql
 ```
 *Warning: This permanently deletes the databases and all their data.*
-
-## Project Structure
-
-*   `data/`: Contains original CSV data files used as inspiration (read-only reference).
-*   `data/load/`: Contains CSV files used by `populate_data.sql` to load mock data.
-*   `sql/`: Contains SQL scripts for schema setup, teardown, population, analysis, and procedure creation.
-*   `scripts/`: Contains shell scripts to automate common workflows.
-*   `tests/`: Contains Python unittest files.
-    *   `test_database_connection.py`: Tests basic connection and table existence.
-    *   `test_data_requirements/`: Tests specific schema details and constraints for each table.
-    *   `test_functional_requirements.py`: Tests the required queries and trigger functionality.
-*   `pre_computed_results/`: Contains example output from analysis and comparison scripts.
-    *   `analysis/`: Output from `run_analysis.sh`.
-    *   `comparison/`: Output from `run_db_comparison.sh`.
-*   `report.md`: Project report addressing analysis requirements.
-*   `README.md`: This file.
 
 ## Troubleshooting
 

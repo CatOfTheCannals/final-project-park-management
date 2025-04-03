@@ -118,8 +118,31 @@ This tool is valuable for:
 
 To use the procedure:
 ```sql
-CALL compare_databases('database1', 'database2');
+-- Example call:
+CALL compare_databases('park_management', 'park_management_backup'); 
 ```
+*(Replace 'park_management_backup' with the name of the second database you want to compare)*
+
+#### Analysis of Comparison Results (`schema_comparison_output.txt`)
+
+The execution of `scripts/run_db_comparison.sh` generates the comparison output in `results/comparison/schema_comparison_output.txt`. Analyzing this output reveals the following discrepancies between the `park_management` (main) and `park_management_alt` (alternative) schemas, reflecting the intentional differences introduced in `sql/setup_alternative_db.sql`:
+
+*   **Table Differences:**
+    *   The `email_log` table exists only in `park_management`. This was intentionally omitted from `park_management_alt`.
+    *   The tables `adventure_trails` and `eco_innovations` exist only in `park_management_alt`, as they were added specifically to the alternative schema script.
+
+*   **Index Differences (on common tables):**
+    *   The comparison highlights differences in index naming and potentially implicit vs. explicit index creation. For example, `park_management` might have implicitly created indexes for foreign keys or parts of primary keys (like `element_id`, `province_id`, `park_id`), while `park_management_alt` has explicitly named indexes (`idx_...`).
+    *   Crucially, the `UNIQUE` index on `provinces.name` is missing in `park_management_alt` (as intended), which is reflected in the constraint differences.
+    *   The `UNIQUE` index on `natural_elements.common_name` exists only in `park_management_alt` (as intended).
+    *   The index `idx_parks_code` was intentionally omitted in `park_management_alt`, although the comparison output might not list it directly if the `UNIQUE` constraint on `code` implicitly created a usable index structure in both.
+
+*   **Constraint Differences (on common tables):**
+    *   The `UNIQUE` constraint on `provinces.name` exists only in `park_management`. This was intentionally removed in `park_management_alt`.
+    *   The foreign key constraint `visitors_ibfk_2` (linking `visitors.park_id` to `parks.id`) exists only in `park_management`. This was intentionally omitted in `park_management_alt`.
+    *   A `UNIQUE` constraint on `natural_elements.common_name` exists only in `park_management_alt`. This was an intentional addition to the alternative schema.
+
+These results confirm that the `compare_databases` procedure successfully identifies variations in tables, indexes, and constraints between two database schemas, matching the deliberate modifications made in the setup scripts.
 
 ### Concurrency Control & Recovery Mechanisms (Additional Req 7)
 

@@ -166,8 +166,7 @@ class TestVisitorsDataRequirements(unittest.TestCase):
     def test_visitors_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in visitors table"""
         # Try inserting invalid data (non-existent accommodation_id)
-        # Note: accommodation_id allows NULL, so this test might need adjustment if FK is strictly required
-        if self.accommodation_id is not None: # Only test if accommodation_id is supposed to be valid
+        if self.accommodation_id is not None:
             with self.assertRaises(pymysql.err.IntegrityError):
                 self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV555', 'Invalid Acc Name', 99999, %s)", (self.park_id,))
                 inserted_id = self.cursor.lastrowid # If insert succeeds unexpectedly
@@ -186,7 +185,6 @@ class TestVisitorsDataRequirements(unittest.TestCase):
     def test_visitors_foreign_key_enforcement(self):
         """Test foreign key constraint enforcement in visitors table"""
         # Try inserting invalid data (non-existent accommodation_id)
-        # Note: accommodation_id allows NULL, so this test might need adjustment if FK is strictly required
         if self.accommodation_id is not None: # Only test if accommodation_id is supposed to be valid
             with self.assertRaises(pymysql.err.IntegrityError):
                 self.cursor.execute("INSERT INTO visitors (DNI, name, accommodation_id, park_id) VALUES ('TESTV555', 'Invalid Acc Name', 99999, %s)", (self.park_id,))

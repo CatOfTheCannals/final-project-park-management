@@ -50,7 +50,6 @@ class TestExcursionsDataRequirements(unittest.TestCase):
         """Test data insertion into excursions table"""
         try:
             # Insert valid data
-            # Insert valid data
             self.cursor.execute("INSERT INTO excursions (day_of_week, time, type) VALUES ('TEST_E_Sunday', '10:00:00', 'foot')")
             inserted_id = self.cursor.lastrowid
             self.created_ids.append(inserted_id) # Track ID

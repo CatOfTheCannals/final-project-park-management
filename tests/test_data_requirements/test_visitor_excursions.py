@@ -31,7 +31,6 @@ class TestVisitorExcursionsDataRequirements(unittest.TestCase):
             self.excursion_id = cursor.lastrowid
             self.connection.commit()
 
-
     def tearDown(self):
         # Clean up test data - order matters
         with self.connection.cursor() as cursor:

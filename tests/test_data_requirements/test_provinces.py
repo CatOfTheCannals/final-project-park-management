@@ -74,17 +74,3 @@ class TestProvincesDataRequirements(TestCase):
             # Clean up potentially inserted data
             self.cursor.execute("DELETE FROM provinces WHERE name = 'TestProvRequired';")
             self.connection.commit()
-
-        # Note: Inserting an empty string '' IS generally allowed by NOT NULL constraint.
-        # If empty strings should be disallowed, a CHECK constraint or trigger is needed.
-        # try:
-        #     # Insert a province with an empty responsible organization
-        #     self.cursor.execute("INSERT INTO provinces (name, responsible_organization) VALUES ('TestProvEmptyOrg', '')")
-        #     self.connection.commit()
-        #     # self.fail("Should not allow a province with an empty responsible organization") # This check is likely incorrect for NOT NULL
-        # except (pymysql.err.IntegrityError, pymysql.err.OperationalError):
-        #     self.connection.rollback()
-        # finally:
-        #     # Clean up potentially inserted data
-        #     self.cursor.execute("DELETE FROM provinces WHERE name = 'TestProvEmptyOrg';")
-        #     self.connection.commit()

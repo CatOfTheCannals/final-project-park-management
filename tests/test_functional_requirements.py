@@ -278,13 +278,5 @@ class TestFunctionalRequirements(TestCase):
         self.assertIn('Plantus rarus', species_in_one_park, "Expected 'Plantus rarus' to be in only one park")
         self.assertIn('Animalia familiaris', species_in_one_park, "Expected 'Animalia familiaris' to be in only one park")
 
-
-        # Clean up: Restore original count (optional, depends if other tests rely on it)
-        # self.cursor.execute("""
-        #     UPDATE area_elements SET number_of_individuals = %s
-        #     WHERE park_id = %s AND area_number = 1 AND element_id = %s;
-        # """, (initial_count, self.park_a_id, self.plant_common_id))
-        # self.connection.commit()
-        # Clean up the log entry created by this test
         self.cursor.execute("DELETE FROM email_log WHERE element_scientific_name = 'Plantus communis' AND park_email = 'parqueA@example.com';")
         self.connection.commit()

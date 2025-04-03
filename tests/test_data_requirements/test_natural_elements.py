@@ -35,4 +35,3 @@ class TestNaturalElementsDataRequirements(TestCase):
         common_name_column = self.cursor.fetchone()
         self.assertIsNotNone(common_name_column, "Natural elements table does not have 'common_name' column")
 
-# Removed TestAreaDataRequirements class - moved to test_area_elements.py

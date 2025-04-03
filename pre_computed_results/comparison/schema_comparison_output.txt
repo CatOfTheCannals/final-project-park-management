@@ -1,0 +1,38 @@
+Comparing database schemas:	db1_name	vs	db2_name
+Comparing database schemas:	park_management	vs	park_management_alt
+-- Tables present only in 	db1_name	
+-- Tables present only in 	park_management	 --
+TABLE_NAME
+email_log
+-- Tables present only in 	db2_name	
+-- Tables present only in 	park_management_alt	 --
+TABLE_NAME
+adventure_trails
+eco_innovations
+-- Indexes present only in 	db1_name	
+-- Indexes present only in 	park_management	 (on common tables) --
+TABLE_NAME	INDEX_NAME
+area_elements	element_id
+park_provinces	province_id
+provinces	name
+visitors	park_id
+-- Indexes present only in 	db2_name	
+-- Indexes present only in 	park_management_alt	 (on common tables) --
+TABLE_NAME	INDEX_NAME
+area_elements	idx_area_elements_element_id
+area_elements	idx_area_elements_park_id
+natural_elements	common_name
+natural_elements	idx_natural_elements_scientific_name
+park_provinces	idx_park_provinces_province_id
+visitors	idx_visitors_park_id
+-- Constraints present only in 	db1_name	
+-- Constraints present only in 	park_management	 (on common tables) --
+TABLE_NAME	CONSTRAINT_NAME	CONSTRAINT_TYPE
+provinces	name	UNIQUE
+visitors	visitors_ibfk_2	FOREIGN KEY
+-- Constraints present only in 	db2_name	
+-- Constraints present only in 	park_management_alt	 (on common tables) --
+TABLE_NAME	CONSTRAINT_NAME	CONSTRAINT_TYPE
+natural_elements	common_name	UNIQUE
+
+-- Comparison Complete --

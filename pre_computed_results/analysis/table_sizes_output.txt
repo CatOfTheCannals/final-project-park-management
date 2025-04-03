@@ -1,0 +1,154 @@
+Table	Size (MB)	Data Size (MB)	Index Size (MB)	Rows
+visitors	0.0625	0.0156	0.0469	53
+personnel	0.0469	0.0156	0.0313	29
+accommodation_excursions	0.0313	0.0156	0.0156	32
+accommodations	0.0313	0.0156	0.0156	15
+area_elements	0.0313	0.0156	0.0156	136
+conservation_personnel	0.0313	0.0156	0.0156	8
+element_food	0.0313	0.0156	0.0156	18
+natural_elements	0.0313	0.0156	0.0156	61
+park_provinces	0.0313	0.0156	0.0156	21
+parks	0.0313	0.0156	0.0156	20
+provinces	0.0313	0.0156	0.0156	23
+research_personnel	0.0313	0.0156	0.0156	11
+research_projects	0.0313	0.0156	0.0156	10
+visitor_excursions	0.0313	0.0156	0.0156	54
+animal_elements	0.0156	0.0156	0.0000	31
+email_log	0.0156	0.0156	0.0000	0
+excursions	0.0156	0.0156	0.0000	18
+management_personnel	0.0156	0.0156	0.0000	5
+mineral_elements	0.0156	0.0156	0.0000	10
+park_areas	0.0156	0.0156	0.0000	46
+surveillance_personnel	0.0156	0.0156	0.0000	8
+vegetal_elements	0.0156	0.0156	0.0000	20
+
+-- Table List --
+Table Name
+accommodation_excursions
+accommodations
+animal_elements
+area_elements
+conservation_personnel
+element_food
+email_log
+excursions
+management_personnel
+mineral_elements
+natural_elements
+park_areas
+park_provinces
+parks
+personnel
+provinces
+research_personnel
+research_projects
+surveillance_personnel
+vegetal_elements
+visitor_excursions
+visitors
+
+-- Row Counts --
+Table	Row Count
+area_elements	136
+natural_elements	61
+visitor_excursions	54
+visitors	53
+park_areas	46
+accommodation_excursions	32
+animal_elements	31
+personnel	29
+provinces	24
+park_provinces	21
+parks	20
+vegetal_elements	20
+element_food	18
+excursions	18
+accommodations	15
+research_personnel	11
+mineral_elements	10
+research_projects	10
+surveillance_personnel	8
+conservation_personnel	8
+management_personnel	5
+
+-- Column Details --
+Table	Column	Type	Nullable	Key	Default	Extra
+accommodation_excursions	accommodation_id	int	NO	PRI	NULL	
+accommodation_excursions	excursion_id	int	NO	PRI	NULL	
+accommodations	id	int	NO	PRI	NULL	auto_increment
+accommodations	capacity	int	NO		NULL	
+accommodations	category	varchar(255)	YES	UNI	NULL	
+animal_elements	element_id	int	NO	PRI	NULL	
+animal_elements	diet	varchar(255)	YES		NULL	
+animal_elements	mating_season	varchar(255)	YES		NULL	
+area_elements	park_id	int	NO	PRI	NULL	
+area_elements	area_number	int	NO	PRI	NULL	
+area_elements	element_id	int	NO	PRI	NULL	
+area_elements	number_of_individuals	int	YES		NULL	
+conservation_personnel	personnel_id	int	NO	PRI	NULL	
+conservation_personnel	specialty	varchar(255)	YES		NULL	
+conservation_personnel	park_id	int	NO	MUL	NULL	
+conservation_personnel	area_number	int	NO		NULL	
+element_food	element_id	int	NO	PRI	NULL	
+element_food	food_element_id	int	NO	PRI	NULL	
+email_log	log_id	int	NO	PRI	NULL	auto_increment
+email_log	park_email	varchar(255)	YES		NULL	
+email_log	element_scientific_name	varchar(255)	YES		NULL	
+email_log	old_count	int	YES		NULL	
+email_log	new_count	int	YES		NULL	
+email_log	log_timestamp	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+excursions	id	int	NO	PRI	NULL	auto_increment
+excursions	day_of_week	varchar(20)	NO		NULL	
+excursions	time	time	NO		NULL	
+excursions	type	enum('foot','vehicle')	NO		NULL	
+management_personnel	personnel_id	int	NO	PRI	NULL	
+management_personnel	entrance_number	int	YES		NULL	
+mineral_elements	element_id	int	NO	PRI	NULL	
+mineral_elements	crystal_or_rock	varchar(255)	YES		NULL	
+natural_elements	id	int	NO	PRI	NULL	auto_increment
+natural_elements	scientific_name	varchar(255)	YES	UNI	NULL	
+natural_elements	common_name	varchar(255)	YES		NULL	
+park_areas	park_id	int	NO	PRI	NULL	
+park_areas	area_number	int	NO	PRI	NULL	
+park_areas	name	varchar(255)	YES		NULL	
+park_areas	extension	decimal(15,2)	YES		NULL	
+park_provinces	park_id	int	NO	PRI	NULL	
+park_provinces	province_id	int	NO	PRI	NULL	
+park_provinces	extension_in_province	decimal(15,2)	YES		NULL	
+parks	id	int	NO	PRI	NULL	auto_increment
+parks	name	varchar(255)	NO		NULL	
+parks	declaration_date	date	NO		NULL	
+parks	contact_email	varchar(255)	YES		NULL	
+parks	code	varchar(10)	NO	UNI	NULL	
+parks	total_area	decimal(15,2)	YES		NULL	
+personnel	id	int	NO	PRI	NULL	auto_increment
+personnel	DNI	varchar(20)	NO	UNI	NULL	
+personnel	CUIL	varchar(20)	NO	UNI	NULL	
+personnel	name	varchar(255)	NO		NULL	
+personnel	address	varchar(255)	YES		NULL	
+personnel	phone_numbers	varchar(255)	YES		NULL	
+personnel	salary	decimal(10,2)	YES		NULL	
+provinces	id	int	NO	PRI	NULL	auto_increment
+provinces	name	varchar(255)	NO	UNI	NULL	
+provinces	responsible_organization	varchar(255)	NO		NULL	
+research_personnel	personnel_id	int	NO	PRI	NULL	
+research_personnel	project_id	int	NO	PRI	NULL	
+research_personnel	title	varchar(255)	YES		NULL	
+research_projects	id	int	NO	PRI	NULL	auto_increment
+research_projects	budget	decimal(15,2)	NO		NULL	
+research_projects	duration	varchar(255)	NO		NULL	
+research_projects	element_id	int	NO	MUL	NULL	
+surveillance_personnel	personnel_id	int	NO	PRI	NULL	
+surveillance_personnel	vehicle_type	varchar(255)	YES		NULL	
+surveillance_personnel	vehicle_registration	varchar(20)	YES		NULL	
+vegetal_elements	element_id	int	NO	PRI	NULL	
+vegetal_elements	flowering_period	varchar(255)	YES		NULL	
+visitor_excursions	visitor_id	int	NO	PRI	NULL	
+visitor_excursions	excursion_id	int	NO	PRI	NULL	
+visitors	id	int	NO	PRI	NULL	auto_increment
+visitors	DNI	varchar(20)	NO	UNI	NULL	
+visitors	name	varchar(255)	NO		NULL	
+visitors	address	varchar(255)	YES		NULL	
+visitors	profession	varchar(255)	YES		NULL	
+visitors	accommodation_id	int	YES	MUL	NULL	
+visitors	park_id	int	YES	MUL	NULL	

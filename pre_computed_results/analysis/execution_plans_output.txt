@@ -1,0 +1,114 @@
+
+-- ANALYSIS: FUNCTIONAL REQUIREMENT 1: Province with most parks --
+
+-- Execution Plan (JSON): --
+EXPLAIN
+{\n  "query_block": {\n    "select_id": 1,\n    "cost_info": {\n      "query_cost": "9.70"\n    },\n    "ordering_operation": {\n      "using_filesort": true,\n      "grouping_operation": {\n        "using_temporary_table": true,\n        "using_filesort": false,\n        "nested_loop": [\n          {\n            "table": {\n              "table_name": "pp",\n              "access_type": "index",\n              "possible_keys": [\n                "idx_park_provinces_province_id"\n              ],\n              "key": "idx_park_provinces_province_id",\n              "used_key_parts": [\n                "province_id"\n              ],\n              "key_length": "4",\n              "rows_examined_per_scan": 21,\n              "rows_produced_per_join": 21,\n              "filtered": "100.00",\n              "using_index": true,\n              "cost_info": {\n                "read_cost": "0.25",\n                "eval_cost": "2.10",\n                "prefix_cost": "2.35",\n                "data_read_per_join": "504"\n              },\n              "used_columns": [\n                "park_id",\n                "province_id"\n              ]\n            }\n          },\n          {\n            "table": {\n              "table_name": "p",\n              "access_type": "eq_ref",\n              "possible_keys": [\n                "PRIMARY",\n                "name"\n              ],\n              "key": "PRIMARY",\n              "used_key_parts": [\n                "id"\n              ],\n              "key_length": "4",\n              "ref": [\n                "park_management.pp.province_id"\n              ],\n              "rows_examined_per_scan": 1,\n              "rows_produced_per_join": 21,\n              "filtered": "100.00",\n              "cost_info": {\n                "read_cost": "5.25",\n                "eval_cost": "2.10",\n                "prefix_cost": "9.70",\n                "data_read_per_join": "42K"\n              },\n              "used_columns": [\n                "id",\n                "name"\n              ]\n            }\n          }\n        ]\n      }\n    }\n  }\n}
+
+-- Query Result: --
+name	park_count
+Buenos Aires	2
+
+-- ANALYSIS: FUNCTIONAL REQUIREMENT 2: Vegetal species in at least half of parks --
+
+-- Execution Plan (JSON): --
+EXPLAIN
+{\n  "query_block": {\n    "select_id": 1,\n    "cost_info": {\n      "query_cost": "102.28"\n    },\n    "grouping_operation": {\n      "using_temporary_table": true,\n      "using_filesort": true,\n      "cost_info": {\n        "sort_cost": "80.00"\n      },\n      "nested_loop": [\n        {\n          "table": {\n            "table_name": "ve",\n            "access_type": "index",\n            "possible_keys": [\n              "PRIMARY"\n            ],\n            "key": "PRIMARY",\n            "used_key_parts": [\n              "element_id"\n            ],\n            "key_length": "4",\n            "rows_examined_per_scan": 20,\n            "rows_produced_per_join": 20,\n            "filtered": "100.00",\n            "using_index": true,\n            "cost_info": {\n              "read_cost": "0.25",\n              "eval_cost": "2.00",\n              "prefix_cost": "2.25",\n              "data_read_per_join": "20K"\n            },\n            "used_columns": [\n              "element_id"\n            ]\n          }\n        },\n        {\n          "table": {\n            "table_name": "ne",\n            "access_type": "eq_ref",\n            "possible_keys": [\n              "PRIMARY",\n              "scientific_name",\n              "idx_natural_elements_scientific_name"\n            ],\n            "key": "PRIMARY",\n            "used_key_parts": [\n              "id"\n            ],\n            "key_length": "4",\n            "ref": [\n              "park_management.ve.element_id"\n            ],\n            "rows_examined_per_scan": 1,\n            "rows_produced_per_join": 20,\n            "filtered": "100.00",\n            "cost_info": {\n              "read_cost": "5.00",\n              "eval_cost": "2.00",\n              "prefix_cost": "9.25",\n              "data_read_per_join": "40K"\n            },\n            "used_columns": [\n              "id",\n              "scientific_name"\n            ]\n          }\n        },\n        {\n          "table": {\n            "table_name": "ae",\n            "access_type": "ref",\n            "possible_keys": [\n              "idx_area_elements_element_id"\n            ],\n            "key": "idx_area_elements_element_id",\n            "used_key_parts": [\n              "element_id"\n            ],\n            "key_length": "4",\n            "ref": [\n              "park_management.ve.element_id"\n            ],\n            "rows_examined_per_scan": 4,\n            "rows_produced_per_join": 80,\n            "filtered": "100.00",\n            "using_index": true,\n            "cost_info": {\n              "read_cost": "5.03",\n              "eval_cost": "8.00",\n              "prefix_cost": "22.28",\n              "data_read_per_join": "1K"\n            },\n            "used_columns": [\n              "park_id",\n              "area_number",\n              "element_id"\n            ]\n          }\n        }\n      ],\n      "having_subqueries": [\n        {\n          "dependent": false,\n          "cacheable": true,\n          "query_block": {\n            "select_id": 2,\n            "cost_info": {\n              "query_cost": "2.25"\n            },\n            "table": {\n              "table_name": "parks",\n              "access_type": "index",\n              "key": "code",\n              "used_key_parts": [\n                "code"\n              ],\n              "key_length": "42",\n              "rows_examined_per_scan": 20,\n              "rows_produced_per_join": 20,\n              "filtered": "100.00",\n              "using_index": true,\n              "cost_info": {\n                "read_cost": "0.25",\n                "eval_cost": "2.00",\n                "prefix_cost": "2.25",\n                "data_read_per_join": "41K"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}
+
+-- Query Result: --
+scientific_name	park_count	half_parks_count
+Nothofagus pumilio	18	10.0000
+
+-- ANALYSIS: FUNCTIONAL REQUIREMENT 3: Count visitors in parks with codes A and B --
+
+-- Execution Plan (JSON): --
+EXPLAIN
+{\n  "query_block": {\n    "select_id": 1,\n    "cost_info": {\n      "query_cost": "0.70"\n    },\n    "nested_loop": [\n      {\n        "table": {\n          "table_name": "v",\n          "access_type": "index",\n          "possible_keys": [\n            "idx_visitors_park_id"\n          ],\n          "key": "idx_visitors_park_id",\n          "used_key_parts": [\n            "park_id"\n          ],\n          "key_length": "5",\n          "rows_examined_per_scan": 1,\n          "rows_produced_per_join": 1,\n          "filtered": "100.00",\n          "using_index": true,\n          "cost_info": {\n            "read_cost": "0.25",\n            "eval_cost": "0.10",\n            "prefix_cost": "0.35",\n            "data_read_per_join": "3K"\n          },\n          "used_columns": [\n            "id",\n            "park_id"\n          ],\n          "attached_condition": "(`park_management`.`v`.`park_id` is not null)"\n        }\n      },\n      {\n        "table": {\n          "table_name": "p",\n          "access_type": "eq_ref",\n          "possible_keys": [\n            "PRIMARY",\n            "code",\n            "idx_parks_code"\n          ],\n          "key": "PRIMARY",\n          "used_key_parts": [\n            "id"\n          ],\n          "key_length": "4",\n          "ref": [\n            "park_management.v.park_id"\n          ],\n          "rows_examined_per_scan": 1,\n          "rows_produced_per_join": 0,\n          "filtered": "10.00",\n          "cost_info": {\n            "read_cost": "0.25",\n            "eval_cost": "0.01",\n            "prefix_cost": "0.70",\n            "data_read_per_join": "210"\n          },\n          "used_columns": [\n            "id",\n            "code"\n          ],\n          "attached_condition": "(`park_management`.`p`.`code` in ('A','B'))"\n        }\n      }\n    ]\n  }\n}
+
+-- Query Result: --
+visitor_count
+13
+
+-- ANALYSIS: ADDITIONAL REQUIREMENT 3: Species in all parks --
+
+-- Execution Plan (JSON): --
+EXPLAIN
+{\n  "query_block": {\n    "select_id": 1,\n    "cost_info": {\n      "query_cost": "197.45"\n    },\n    "grouping_operation": {\n      "using_temporary_table": true,\n      "using_filesort": true,\n      "cost_info": {\n        "sort_cost": "136.00"\n      },\n      "nested_loop": [\n        {\n          "table": {\n            "table_name": "ae",\n            "access_type": "index",\n            "possible_keys": [\n              "idx_area_elements_element_id"\n            ],\n            "key": "idx_area_elements_element_id",\n            "used_key_parts": [\n              "element_id"\n            ],\n            "key_length": "4",\n            "rows_examined_per_scan": 136,\n            "rows_produced_per_join": 136,\n            "filtered": "100.00",\n            "using_index": true,\n            "cost_info": {\n              "read_cost": "0.25",\n              "eval_cost": "13.60",\n              "prefix_cost": "13.85",\n              "data_read_per_join": "3K"\n            },\n            "used_columns": [\n              "park_id",\n              "area_number",\n              "element_id"\n            ]\n          }\n        },\n        {\n          "table": {\n            "table_name": "ne",\n            "access_type": "eq_ref",\n            "possible_keys": [\n              "PRIMARY",\n              "scientific_name",\n              "idx_natural_elements_scientific_name"\n            ],\n            "key": "PRIMARY",\n            "used_key_parts": [\n              "id"\n            ],\n            "key_length": "4",\n            "ref": [\n              "park_management.ae.element_id"\n            ],\n            "rows_examined_per_scan": 1,\n            "rows_produced_per_join": 136,\n            "filtered": "100.00",\n            "cost_info": {\n              "read_cost": "34.00",\n              "eval_cost": "13.60",\n              "prefix_cost": "61.45",\n              "data_read_per_join": "273K"\n            },\n            "used_columns": [\n              "id",\n              "scientific_name"\n            ]\n          }\n        }\n      ],\n      "having_subqueries": [\n        {\n          "dependent": false,\n          "cacheable": true,\n          "query_block": {\n            "select_id": 2,\n            "cost_info": {\n              "query_cost": "2.25"\n            },\n            "table": {\n              "table_name": "parks",\n              "access_type": "index",\n              "key": "code",\n              "used_key_parts": [\n                "code"\n              ],\n              "key_length": "42",\n              "rows_examined_per_scan": 20,\n              "rows_produced_per_join": 20,\n              "filtered": "100.00",\n              "using_index": true,\n              "cost_info": {\n                "read_cost": "0.25",\n                "eval_cost": "2.00",\n                "prefix_cost": "2.25",\n                "data_read_per_join": "41K"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}
+
+-- Query Result: --
+scientific_name	park_count	total_parks
+Puma concolor	20	20
+
+-- ANALYSIS: ADDITIONAL REQUIREMENT 4: Species in only one park --
+
+-- Execution Plan (JSON): --
+EXPLAIN
+{\n  "query_block": {\n    "select_id": 1,\n    "cost_info": {\n      "query_cost": "197.45"\n    },\n    "grouping_operation": {\n      "using_temporary_table": true,\n      "using_filesort": true,\n      "cost_info": {\n        "sort_cost": "136.00"\n      },\n      "nested_loop": [\n        {\n          "table": {\n            "table_name": "ae",\n            "access_type": "index",\n            "possible_keys": [\n              "idx_area_elements_element_id"\n            ],\n            "key": "idx_area_elements_element_id",\n            "used_key_parts": [\n              "element_id"\n            ],\n            "key_length": "4",\n            "rows_examined_per_scan": 136,\n            "rows_produced_per_join": 136,\n            "filtered": "100.00",\n            "using_index": true,\n            "cost_info": {\n              "read_cost": "0.25",\n              "eval_cost": "13.60",\n              "prefix_cost": "13.85",\n              "data_read_per_join": "3K"\n            },\n            "used_columns": [\n              "park_id",\n              "area_number",\n              "element_id"\n            ]\n          }\n        },\n        {\n          "table": {\n            "table_name": "ne",\n            "access_type": "eq_ref",\n            "possible_keys": [\n              "PRIMARY",\n              "scientific_name",\n              "idx_natural_elements_scientific_name"\n            ],\n            "key": "PRIMARY",\n            "used_key_parts": [\n              "id"\n            ],\n            "key_length": "4",\n            "ref": [\n              "park_management.ae.element_id"\n            ],\n            "rows_examined_per_scan": 1,\n            "rows_produced_per_join": 136,\n            "filtered": "100.00",\n            "cost_info": {\n              "read_cost": "34.00",\n              "eval_cost": "13.60",\n              "prefix_cost": "61.45",\n              "data_read_per_join": "273K"\n            },\n            "used_columns": [\n              "id",\n              "scientific_name"\n            ]\n          }\n        }\n      ]\n    }\n  }\n}
+
+-- Query Result: --
+scientific_name	park_count
+Panthera onca	1
+Myrmecophaga tridactyla	1
+Tapirus terrestris	1
+Chrysocyon brachyurus	1
+Leopardus geoffroyi	1
+Ara chloropterus	1
+Ramphastos toco	1
+Austrocedrus chilensis	1
+Prosopis flexuosa	1
+Schinopsis balansae	1
+Ceiba chodatii	1
+Fitzroya cupressoides	1
+Bulnesia sarmientoi	1
+Aspidosperma quebracho-blanco	1
+Celtis ehrenbergiana	1
+Victoria cruziana	1
+Quartz	1
+Rhodochrosite	1
+Basalt	1
+Hydrochoerus hydrochaeris	1
+
+-- SUMMARY OF INDEXES CREATED --
+TABLE_NAME	INDEX_NAME	indexed_columns	INDEX_TYPE	IS_VISIBLE
+accommodation_excursions	excursion_id	excursion_id	BTREE	YES
+accommodation_excursions	PRIMARY	accommodation_id,excursion_id	BTREE	YES
+accommodations	category	category	BTREE	YES
+accommodations	PRIMARY	id	BTREE	YES
+animal_elements	PRIMARY	element_id	BTREE	YES
+area_elements	idx_area_elements_element_id	element_id	BTREE	YES
+area_elements	idx_area_elements_park_id	park_id	BTREE	YES
+area_elements	PRIMARY	park_id,area_number,element_id	BTREE	YES
+conservation_personnel	park_id	park_id,area_number	BTREE	YES
+conservation_personnel	PRIMARY	personnel_id	BTREE	YES
+element_food	food_element_id	food_element_id	BTREE	YES
+element_food	PRIMARY	element_id,food_element_id	BTREE	YES
+email_log	PRIMARY	log_id	BTREE	YES
+excursions	PRIMARY	id	BTREE	YES
+management_personnel	PRIMARY	personnel_id	BTREE	YES
+mineral_elements	PRIMARY	element_id	BTREE	YES
+natural_elements	idx_natural_elements_scientific_name	scientific_name	BTREE	YES
+natural_elements	PRIMARY	id	BTREE	YES
+natural_elements	scientific_name	scientific_name	BTREE	YES
+park_areas	PRIMARY	park_id,area_number	BTREE	YES
+park_provinces	idx_park_provinces_province_id	province_id	BTREE	YES
+park_provinces	PRIMARY	park_id,province_id	BTREE	YES
+parks	code	code	BTREE	YES
+parks	idx_parks_code	code	BTREE	YES
+parks	PRIMARY	id	BTREE	YES
+personnel	CUIL	CUIL	BTREE	YES
+personnel	DNI	DNI	BTREE	YES
+personnel	PRIMARY	id	BTREE	YES
+provinces	name	name	BTREE	YES
+provinces	PRIMARY	id	BTREE	YES
+research_personnel	PRIMARY	personnel_id,project_id	BTREE	YES
+research_personnel	project_id	project_id	BTREE	YES
+research_projects	element_id	element_id	BTREE	YES
+research_projects	PRIMARY	id	BTREE	YES
+surveillance_personnel	PRIMARY	personnel_id	BTREE	YES
+vegetal_elements	PRIMARY	element_id	BTREE	YES
+visitor_excursions	excursion_id	excursion_id	BTREE	YES
+visitor_excursions	PRIMARY	visitor_id,excursion_id	BTREE	YES
+visitors	accommodation_id	accommodation_id	BTREE	YES
+visitors	DNI	DNI	BTREE	YES
+visitors	idx_visitors_park_id	park_id	BTREE	YES
+visitors	PRIMARY	id	BTREE	YES

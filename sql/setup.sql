@@ -209,6 +209,7 @@ CREATE TABLE IF NOT EXISTS visitors (
     accommodation_id INT,
     park_id INT, 
     FOREIGN KEY (accommodation_id) REFERENCES accommodations(id) ON DELETE SET NULL, 
+    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS excursions (

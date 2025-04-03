@@ -8,16 +8,20 @@ This project aims to develop a database system for managing information about na
 2. **Modular Implementation:** Implement core functionalities first, progressively adding more features while maintaining test coverage.
 3. **Documentation:** Keep detailed records of design decisions and trade-offs.
 
-## Current Status
-### Implemented Requirements:
-- Complete database schema with all required tables and relationships
-- Data validation constraints via foreign keys, unique constraints, and triggers
-- Functional queries for all required reporting needs
-- Comprehensive test suite verifying all requirements
+## Entity Relationship Diagram
 
-## Assumptions
-1. We are using **MySQL** as the database engine.
-2. 
+Below is the ERD generated for the **park_management** database, stored as `pre_computed_results/park_management_er.png`. It illustrates how the various tables (e.g., `parks`, `provinces`, `park_areas`, `natural_elements`, `personnel`, etc.) are related through their primary and foreign keys. Key points include:
+
+- **One-to-Many Relationships**: For instance, each park can have multiple areas (`park_areas`), and each area can host multiple natural elements (`area_elements`).
+- **Specialization Tables**: `vegetal_elements`, `animal_elements`, and `mineral_elements` each reference `natural_elements` using a shared primary key, implementing a single-table inheritance pattern at the database level.
+- **Junction Tables**: Tables like `area_elements`, `element_food`, `accommodation_excursions`, and `visitor_excursions` function as “bridge” tables, linking many-to-many relationships.
+- **Trigger-Related Table**: `email_log` is updated via triggers whenever the count of an element decreases in `area_elements`.
+- **Foreign Key Cascades**: Most foreign keys have `ON DELETE CASCADE` or `ON DELETE SET NULL` to ensure referential integrity and simplified cleanup.
+
+![Park Management ERD](pre_computed_results/park_management_er.png)
+
+This diagram helps visualize the schema’s overall structure, ensuring that all primary and foreign key constraints align with the intended data relationships and application logic.
+
 
 ## Design Decisions & Simplifications
 - **Visitors:** Visitors are directly associated with the park they are visiting (`visitors.park_id`), even though they stay in accommodations. This simplifies querying visitor counts per park.

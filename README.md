@@ -2,7 +2,21 @@
 
 This project implements a database system for managing information about natural parks in Argentina, based on the requirements for an assignment at Universidad de Buenos Aires (UBA) .
 
+## Project Structure
 
+*   `data/`: Contains original CSV data files used as inspiration (read-only reference).
+*   `data/load/`: Contains CSV files used by `populate_data.sql` to load mock data.
+*   `sql/`: Contains SQL scripts for schema setup, teardown, population, analysis, and procedure creation.
+*   `scripts/`: Contains shell scripts to automate common workflows.
+*   `tests/`: Contains Python unittest files.
+    *   `test_database_connection.py`: Tests basic connection and table existence.
+    *   `test_data_requirements/`: Tests specific schema details and constraints for each table.
+    *   `test_functional_requirements.py`: Tests the required queries and trigger functionality.
+*   `pre_computed_results/`: Contains example output from analysis and comparison scripts.
+    *   `analysis/`: Output from `run_analysis.sh`.
+    *   `comparison/`: Output from `run_db_comparison.sh`.
+*   `report.pdf`: Project report addressing analysis requirements.
+*   `README.md`: This file.
 
 ## Prerequisites
 

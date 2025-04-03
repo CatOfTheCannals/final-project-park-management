@@ -17,27 +17,24 @@ This project aims to develop a database system for managing information about na
 
 ## Assumptions
 1. We are using **MySQL** as the database engine.
-2. All data will be stored in a single database instance (`park_management`) for simplicity.
-3. Park codes (`parks.code`) are unique identifiers for parks (e.g., 'A', 'B').
-4. Visitors are directly associated with the park they are visiting (`visitors.park_id`), even though they stay in accommodations. This simplifies querying visitor counts per park.
+2. 
 
 ## Design Decisions & Simplifications
-- **Surveillance Vehicle:** The `surveillance_personnel` table links a vehicle directly to the personnel member. The requirement nuance "siempre es el mismo en cada área que vigila" (always the same in each area they watch) is simplified; we assume one primary vehicle per surveillance staff member rather than tracking vehicle assignments per area vigilated. This meets the requirement as stated, assuming a single vehicle per staff member across all their assigned areas.
+- **Visitors:** Visitors are directly associated with the park they are visiting (`visitors.park_id`), even though they stay in accommodations. This simplifies querying visitor counts per park.
 - **Research Element Link:** Implemented via `research_projects.element_id` foreign key, assuming a project focuses on one primary element.
 - **Conservation Area Link:** Implemented via `conservation_personnel.park_id` and `conservation_personnel.area_number` composite foreign key, assuming a conservation staff member is assigned to one specific area.
 - **Element Food Constraints:** The constraints preventing minerals from being food (`check_mineral_not_food`) and preventing plants from feeding (`check_vegetal_not_feeding`) are implemented using `BEFORE INSERT` and `BEFORE UPDATE` triggers on the `element_food` table. This approach was chosen because MySQL does not support subqueries within `CHECK` constraints.
-- **Visitor-Excursion Link:** A many-to-many relationship table `visitor_excursions` was added to link visitors to the excursions they attend, fulfilling requirement 13.c.
-
-## Analysis and Additional Requirements
 
 
 ### Index Proposal & Execution Plan Analysis 
 
 #### Index Proposal
 
-Our current indexing strategy is exceptionally effective. The indexes are finely tuned to support the join and aggregation operations with minimal overhead.
 
-##### Current Indexing Strategy
+
+### Indexing Strategy
+
+The indexes are finely tuned to support the join and aggregation operations with minimal overhead.
 
 - **Table: natural_elements**
   - **Primary Key:** `id`
@@ -58,11 +55,8 @@ Our current indexing strategy is exceptionally effective. The indexes are finely
 - **Smooth Aggregation:**  
   The grouping on `natural_elements.id` and `scientific_name` is handled efficiently, even with the temporary table and filesort operations. The existing indexes make the grouping and HAVING clause (filtering for a distinct count of 1) cost-effective.
 
-##### Conclusion
-
-The indexes in place are optimal for the current queries, as they minimize row scans and support fast, efficient joins and aggregations. This robust indexing design not only maintains excellent performance with the current dataset but is also scalable as data volume increases.
-
 **Execution Plan Analysis:**
+You can find the explanations for the query plans at pre_computed_results/analysis/execution_plans_output.txt
 
 **Species in all parks:**
    ```sql
@@ -102,7 +96,11 @@ After the join, MySQL groups by natural_elements.id and scientific_name using a 
 
 Overall, the dedicated index on area_elements.element_id is optimal because it directly supports the join. The natural_elements table uses its primary key efficiently. For the current workload, the indexes are well-chosen.
 
-### Database Comparison Procedure (Additional Req 6)
+##### Conclusion
+
+The indexes in place are optimal for the current queries, as they minimize row scans and support fast, efficient joins and aggregations. This robust indexing design not only maintains excellent performance with the current dataset but is also scalable as data volume increases.
+
+### Database Comparison Procedure
 
 A stored procedure named `compare_databases` has been implemented in `sql/setup.sql`. It accepts two database names as input parameters and compares their schema definitions using queries against the `INFORMATION_SCHEMA`.
 
@@ -144,7 +142,7 @@ The execution of `scripts/run_db_comparison.sh` generates the comparison output 
 
 These results confirm that the `compare_databases` procedure successfully identifies variations in tables, indexes, and constraints between two database schemas, matching the deliberate modifications made in the setup scripts.
 
-### Concurrency Control & Recovery Mechanisms (Additional Req 7)
+### Concurrency Control & Recovery Mechanisms
 
 **MySQL (InnoDB Engine):**
 

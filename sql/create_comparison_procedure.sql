@@ -59,9 +59,6 @@ BEGIN
       AND c2.table_name IN (SELECT table_name FROM information_schema.tables WHERE table_schema = db1_name AND table_type = 'BASE TABLE') -- Common tables
       AND c1.constraint_name IS NULL;
 
-    -- Note: Deeper comparison (e.g., index columns, constraint definitions) would require more complex queries joining multiple INFORMATION_SCHEMA tables.
-    -- This implementation focuses on existence checks as required by the prompt.
-
     SELECT '-- Comparison Complete --' AS ' ';
 
 END //

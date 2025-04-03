@@ -13,7 +13,7 @@ DROP TRIGGER IF EXISTS species_decrease_email;
 CREATE TABLE IF NOT EXISTS provinces (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
-    responsible_organization VARCHAR(255) NOT NULL -- Made NOT NULL based on test_provinces.py
+    responsible_organization VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS parks (
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS park_provinces (
     park_id INT,
     province_id INT,
     extension_in_province DECIMAL(15,2),
-    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
+    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE, 
+    FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE CASCADE, 
     PRIMARY KEY (park_id, province_id)
 );
 
@@ -40,12 +40,12 @@ CREATE TABLE IF NOT EXISTS park_areas (
     name VARCHAR(255),
     extension DECIMAL(15,2),
     PRIMARY KEY (park_id, area_number),
-    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS natural_elements (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    scientific_name VARCHAR(255) UNIQUE, -- Added UNIQUE constraint
+    scientific_name VARCHAR(255) UNIQUE,
     common_name VARCHAR(255)
 );
 
@@ -55,38 +55,35 @@ CREATE TABLE IF NOT EXISTS area_elements (
     element_id INT,
     number_of_individuals INT,
     PRIMARY KEY (park_id, area_number, element_id),
-    FOREIGN KEY (park_id, area_number) REFERENCES park_areas(park_id, area_number) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (park_id, area_number) REFERENCES park_areas(park_id, area_number) ON DELETE CASCADE,
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS vegetal_elements (
     element_id INT PRIMARY KEY,
     flowering_period VARCHAR(255),
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS animal_elements (
     element_id INT PRIMARY KEY,
     diet VARCHAR(255),
     mating_season VARCHAR(255),
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS mineral_elements (
     element_id INT PRIMARY KEY,
     crystal_or_rock VARCHAR(255),
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS element_food (
     element_id INT,
     food_element_id INT,
     PRIMARY KEY (element_id, food_element_id),
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (food_element_id) REFERENCES natural_elements(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
-    -- Removed CHECK constraints (check_mineral_not_food, check_vegetal_not_feeding)
-    -- due to MySQL limitations on subqueries within CHECK.
-    -- This logic needs to be enforced at the application level or via triggers.
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id) ON DELETE CASCADE,
+    FOREIGN KEY (food_element_id) REFERENCES natural_elements(id) ON DELETE CASCADE
 );
 
 -- Triggers to enforce element_food constraints (MySQL < 8.0.16 CHECK alternative)
@@ -160,14 +157,14 @@ CREATE TABLE IF NOT EXISTS personnel (
 CREATE TABLE IF NOT EXISTS management_personnel (
     personnel_id INT PRIMARY KEY,
     entrance_number INT,
-    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS surveillance_personnel (
     personnel_id INT PRIMARY KEY,
     vehicle_type VARCHAR(255),
     vehicle_registration VARCHAR(20),
-    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS research_projects (
@@ -175,16 +172,16 @@ CREATE TABLE IF NOT EXISTS research_projects (
     budget DECIMAL(15,2) NOT NULL,
     duration VARCHAR(255) NOT NULL,
     element_id INT NOT NULL,
-    FOREIGN KEY (element_id) REFERENCES natural_elements(id) -- No cascade delete here, maybe project remains if element deleted? Or handle differently.
+    FOREIGN KEY (element_id) REFERENCES natural_elements(id)
 );
 
 CREATE TABLE IF NOT EXISTS research_personnel (
-    personnel_id INT, -- Changed to allow multiple personnel per project
+    personnel_id INT, 
     project_id INT,
     title VARCHAR(255), -- Titulation of the personnel for this project
     PRIMARY KEY (personnel_id, project_id), -- Composite key
-    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (project_id) REFERENCES research_projects(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES research_projects(id) ON DELETE CASCADE
 );
 
 
@@ -193,14 +190,14 @@ CREATE TABLE IF NOT EXISTS conservation_personnel (
     specialty VARCHAR(255),
     park_id INT NOT NULL,
     area_number INT NOT NULL,
-    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (park_id, area_number) REFERENCES park_areas(park_id, area_number) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (personnel_id) REFERENCES personnel(id) ON DELETE CASCADE,
+    FOREIGN KEY (park_id, area_number) REFERENCES park_areas(park_id, area_number) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS accommodations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     capacity INT NOT NULL,
-    category VARCHAR(255) UNIQUE -- Added UNIQUE constraint based on test setup
+    category VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS visitors (
@@ -210,9 +207,8 @@ CREATE TABLE IF NOT EXISTS visitors (
     address VARCHAR(255),
     profession VARCHAR(255),
     accommodation_id INT,
-    park_id INT, -- Added based on previous discussion for Func Req 3 testability
-    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id) ON DELETE SET NULL, -- Allow visitor if accommodation removed? Or CASCADE? SET NULL chosen.
-    FOREIGN KEY (park_id) REFERENCES parks(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    park_id INT, 
+    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id) ON DELETE SET NULL, 
 );
 
 CREATE TABLE IF NOT EXISTS excursions (
@@ -226,8 +222,8 @@ CREATE TABLE IF NOT EXISTS accommodation_excursions (
     accommodation_id INT,
     excursion_id INT,
     PRIMARY KEY (accommodation_id, excursion_id),
-    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id) ON DELETE CASCADE, -- Added ON DELETE CASCADE
-    FOREIGN KEY (excursion_id) REFERENCES excursions(id) ON DELETE CASCADE -- Added ON DELETE CASCADE
+    FOREIGN KEY (accommodation_id) REFERENCES accommodations(id) ON DELETE CASCADE,
+    FOREIGN KEY (excursion_id) REFERENCES excursions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS visitor_excursions (
@@ -238,7 +234,7 @@ CREATE TABLE IF NOT EXISTS visitor_excursions (
     FOREIGN KEY (excursion_id) REFERENCES excursions(id) ON DELETE CASCADE
 );
 
--- Table for Trigger Testing (Func Req 4)
+-- Table for Trigger Testing
 CREATE TABLE IF NOT EXISTS email_log (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     park_email VARCHAR(255),
@@ -248,7 +244,7 @@ CREATE TABLE IF NOT EXISTS email_log (
     log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Trigger Implementation (Func Req 4 - Logging version)
+-- Trigger Implementation (Logging version)
 DELIMITER //
 CREATE TRIGGER species_decrease_email
 AFTER UPDATE ON area_elements

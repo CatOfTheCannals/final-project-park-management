@@ -184,23 +184,3 @@ SET FOREIGN_KEY_CHECKS=1;
 
 -- Clean up temporary function if it exists from previous INSERT version
 DROP FUNCTION IF EXISTS random_individuals;
-
--- Verify data population (Optional: Can be commented out for production use)
-SELECT 'Data population from CSV complete.' AS status;
-SELECT COUNT(*) AS provinces_count FROM provinces;
-SELECT COUNT(*) AS parks_count FROM parks;
-SELECT COUNT(*) AS park_provinces_count FROM park_provinces;
-SELECT COUNT(*) AS park_areas_count FROM park_areas;
-SELECT COUNT(*) AS natural_elements_count FROM natural_elements;
-SELECT COUNT(*) AS animal_elements_count FROM animal_elements;
-SELECT COUNT(*) AS vegetal_elements_count FROM vegetal_elements;
-SELECT COUNT(*) AS mineral_elements_count FROM mineral_elements;
-SELECT COUNT(*) AS area_elements_count FROM area_elements;
-SELECT COUNT(*) AS element_food_count FROM element_food;
-SELECT COUNT(*) AS personnel_count FROM personnel;
-SELECT COUNT(*) AS research_projects_count FROM research_projects;
-SELECT COUNT(*) AS accommodations_count FROM accommodations;
-SELECT COUNT(*) AS visitors_count FROM visitors;
-SELECT COUNT(*) AS excursions_count FROM excursions;
-SELECT COUNT(*) AS accommodation_excursions_count FROM accommodation_excursions;
-SELECT COUNT(*) AS visitor_excursions_count FROM visitor_excursions;

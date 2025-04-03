@@ -2,9 +2,6 @@
 -- Outputs results to files for better analysis
 USE park_management;
 
--- Note: Using /tmp directory for output files to avoid permission issues
--- MySQL user needs FILE privilege
-
 -- Get table sizes in MB
 SELECT 
     table_name AS 'Table',
@@ -18,7 +15,6 @@ WHERE
     table_schema = 'park_management'
 ORDER BY 
     (data_length + index_length) DESC;
--- INTO OUTFILE '/tmp/table_sizes.txt'; -- Removed INTO OUTFILE
 
 -- Get detailed information about each table
 SELECT '-- Table List --' AS ' '; -- Header for clarity
@@ -30,7 +26,6 @@ WHERE
     table_schema = 'park_management'
 ORDER BY 
     table_name;
--- INTO OUTFILE '/tmp/table_list.txt'; -- Removed INTO OUTFILE
 
 -- Count rows in each table
 SELECT '-- Row Counts --' AS ' '; -- Header for clarity
@@ -77,7 +72,6 @@ UNION ALL
 SELECT 'visitor_excursions', COUNT(*) FROM visitor_excursions
 ORDER BY 
     `Row Count` DESC;
--- INTO OUTFILE '/tmp/table_row_counts.txt'; -- Removed INTO OUTFILE
 
 -- Get column information for each table
 SELECT '-- Column Details --' AS ' '; -- Header for clarity
@@ -95,4 +89,3 @@ WHERE
     TABLE_SCHEMA = 'park_management'
 ORDER BY 
     TABLE_NAME, ORDINAL_POSITION;
--- INTO OUTFILE '/tmp/table_columns.txt'; -- Removed INTO OUTFILE

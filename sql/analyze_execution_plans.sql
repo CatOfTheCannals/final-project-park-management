@@ -3,7 +3,6 @@
 USE park_management;
 
 -- Create indexes for better query performance
--- Note: DROP INDEX IF EXISTS removed as schema is created fresh by run_analysis.sh
 CREATE INDEX idx_park_provinces_province_id ON park_provinces(province_id);
 CREATE INDEX idx_area_elements_element_id ON area_elements(element_id);
 CREATE INDEX idx_area_elements_park_id ON area_elements(park_id);
